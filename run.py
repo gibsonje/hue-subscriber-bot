@@ -67,6 +67,10 @@ def trigger_hue():
 #
 
 # --------------------------------------------- Start Functions ----------------------------------------------------
+def connect_hue_bridge():
+  b = Bridge(HUE_BRIDGE_IP)
+  # If the app is not registered and the button is not pressed, press the button and call connect() (this only needs to be run a single time)
+  b.connect()
 
 def send_pong(msg):
     con.send(bytes('PONG %s\r\n' % msg))
@@ -133,6 +137,7 @@ def command_test():
 def command_asdf():
     send_message(CHAN, 'asdfster')
 # --------------------------------------------- End Command Functions ----------------------------------------------
+connect_hue_bridge()
 
 con = socket.socket()
 con.connect((HOST, PORT))
