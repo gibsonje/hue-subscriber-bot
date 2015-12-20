@@ -1,4 +1,4 @@
-# hue-subscirber-bot
+# hue-subscriber-bot
 A bot for flashing your hue bulbs when you get a subscriber.
 
 ## Running on Windows
