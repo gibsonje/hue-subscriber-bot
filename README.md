@@ -17,4 +17,4 @@ https://www.python.org/ftp/python/2.7.10/python-2.7.10.msi
 
 Now download run.py, change all relevant settings, and double click it.
 
-
+The first time you run this you will need to hit your hue bridge's search button within 30 seconds of running it.
