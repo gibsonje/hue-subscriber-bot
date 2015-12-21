@@ -1,7 +1,6 @@
 import logging
 import sys
 
-
 def get_logger(name):
   """
   Configure & return a logger.
@@ -12,13 +11,11 @@ def get_logger(name):
   logger = logging.getLogger(name)
   logger.setLevel(logging.DEBUG)
 
-  ch = logging.StreamHandler(sys.stdout)
-  ch.setLevel(logging.DEBUG)
   formatter = logging.Formatter('%(asctime)s - %(message)s',
                                 '%m/%d/%Y %H:%M:%S')
+  ch = logging.StreamHandler(sys.stdout)
+  ch.setLevel(logging.DEBUG)
   ch.setFormatter(formatter)
   logger.addHandler(ch)
-
-  logger.info(logger.handlers)
 
   return logger

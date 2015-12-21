@@ -2,16 +2,41 @@ from PyQt4 import QtGui, QtCore
 import sys, os
 import hue_bot
 import config
+from multiprocessing import Process, Queue
+from cStringIO import StringIO
 
 import subprocess
 import yaml
 
 from twitch_irc import TwitchIrc
 
-def resource_path(relative):
-  if hasattr(sys, "_MEIPASS"):
-    return os.path.join(sys._MEIPASS, relative)
-  return os.path.join(relative)
+# The new Stream Object which replaces the default stream associated with sys.stdout
+# This object just puts data in a queue!
+class WriteStream(object):
+  def __init__(self,queue):
+    self.queue = queue
+
+  def write(self, text):
+    self.queue.put(text)
+
+  def flush(self):
+    pass
+
+# A QObject (to be run in a QThread) which sits waiting for data to come through a Queue.Queue().
+# It blocks until data is available, and one it has got something from the queue, it sends
+# it to the "MainThread" by emitting a Qt Signal
+class MyReceiver(QtCore.QObject):
+  mysignal = QtCore.pyqtSignal(str)
+
+  def __init__(self,queue,*args,**kwargs):
+    QtCore.QObject.__init__(self,*args,**kwargs)
+    self.queue = queue
+
+  @QtCore.pyqtSlot()
+  def run(self):
+    while True:
+      text = self.queue.get()
+      self.mysignal.emit(text)
 
 class ConfigWindow(QtGui.QDialog, config.Ui_Dialog):
   def __init__(self, parent=None):
@@ -97,20 +122,12 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
   def open_config(self):
     self.config_gui.show()
 
-  def loop(self, time, callback):
-    timer = QtCore.QTimer()
-    timer.setSingleShot(False)
-    timer.timeout.connect(callback)
-    timer.start(time)
-
-    return timer
-
   def update_list(self, line):
     self.text_list.addItem(line)
 
-  class BotThread(QtCore.QThread):
-    bot_updated_signal = QtCore.pyqtSignal(str)
 
+
+  class BotThread(QtCore.QThread):
 
     def run(self):
       # FIXME: This is some hackathon level shit right here
@@ -128,20 +145,33 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
           snake_config['twitch_channel'] = snake_config['channel']
           snake_config['hue_transition_time']*=10
           bot = TwitchIrc(snake_config)
-          bot.run()
 
+          p = Process(target=bot.run, args=())
+          p.start()
+          p.join()
 
   def start_bot(self):
     app = QtCore.QCoreApplication.instance()
     self.bot_thread = self.BotThread()
     self.bot_thread.finished.connect(app.exit)
-    self.bot_thread.bot_updated_signal.connect(self.update_list)
     self.bot_thread.start()
 
 
 def main():
   app = QtGui.QApplication(sys.argv)
   form = MainWindow()
+
+  queue = Queue()
+  sys.stdout = WriteStream(queue)
+
+  # Create thread that will listen on the other end of the queue, and send the text to the textedit in our application
+  thread = QtCore.QThread()
+  my_receiver = MyReceiver(queue)
+  my_receiver.mysignal.connect(form.update_list)
+  my_receiver.moveToThread(thread)
+  thread.started.connect(my_receiver.run)
+  thread.start()
+
   form.show()
   app.exec_()
 
