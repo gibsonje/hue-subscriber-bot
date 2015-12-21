@@ -17,7 +17,7 @@ Options:
 """
 
 from log import get_logger
-from irc_bot.twitch_irc import TwitchIrc
+from twitch_irc import TwitchIrc
 
 import docopt
 

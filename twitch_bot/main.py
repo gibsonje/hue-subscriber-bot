@@ -6,7 +6,7 @@ import config
 import subprocess
 import yaml
 
-
+from twitch_irc import TwitchIrc
 
 def resource_path(relative):
   if hasattr(sys, "_MEIPASS"):
@@ -111,20 +111,38 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
   class BotThread(QtCore.QThread):
     bot_updated_signal = QtCore.pyqtSignal(str)
 
+
     def run(self):
-      path = resource_path('run_bot.py')
+      # FIXME: This is some hackathon level shit right here
+      # I spent about 12 hours on a really fancy way to share output
+      # with a thread, but it did not bundle with installers well...
+      if os.path.isfile("config.yml"):
+        with open("config.yml", 'r') as config_file:
+          config = yaml.load(config_file) or {}
+          snake_config = {k.replace('-','_'): v
+                          for k, v in config.iteritems()}
+          snake_config['twitch_host'] = snake_config['host']
+          snake_config['twitch_port'] = snake_config['port']
+          snake_config['twitch_oauth'] = snake_config['oauth']
+          snake_config['twitch_username'] = snake_config['username']
+          snake_config['twitch_channel'] = snake_config['channel']
+          snake_config['hue_transition_time']*=10
+          bot = TwitchIrc(snake_config)
+          bot.run()
 
-      command = "python {} {}".format(path,"--username=RoflMyPancakes --oauth=\"oauth:chexhqpdnw08v0p433qkttaefk26ki\" --channel=\"#roflmypancakes\" --admin-user=RoflMyPancakes --hue-bridge-ip=\"192.168.3.129\" --hue-bridge-group=Inside")
+      #path = resource_path('run_bot.py')
 
-      proc = subprocess.Popen(command,
-                       shell=True,
-                       stdout=subprocess.PIPE,
-                       )
+      #command = "python {} {}".format(path,"--username=RoflMyPancakes --oauth=\"oauth:chexhqpdnw08v0p433qkttaefk26ki\" --channel=\"#roflmypancakes\" --admin-user=RoflMyPancakes --hue-bridge-ip=\"192.168.3.129\" --hue-bridge-group=Inside")
 
-      lines_iterator = iter(proc.stdout.readline, b"")
-      for line in lines_iterator:
-        if line:
-          self.bot_updated_signal.emit(str(line))
+      #proc = subprocess.Popen(command,
+      #                 shell=True,
+      #                 stdout=subprocess.PIPE,
+      #                 )
+
+      #lines_iterator = iter(proc.stdout.readline, b"")
+      #for line in lines_iterator:
+      #  if line:
+      #    self.bot_updated_signal.emit(str(line))
 
 
   def start_bot(self):
