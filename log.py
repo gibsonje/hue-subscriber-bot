@@ -14,7 +14,8 @@ def get_logger():
 
   ch = logging.StreamHandler(sys.stdout)
   ch.setLevel(logging.DEBUG)
-  formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+  formatter = logging.Formatter('%(asctime)s - %(message)s',
+                                '%m/%d/%Y %H:%M:%S')
   ch.setFormatter(formatter)
   logger.addHandler(ch)
 

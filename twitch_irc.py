@@ -39,12 +39,7 @@ class TwitchIrc:
     color_start = self.config['hue_color_start']
     color_end = self.config['hue_color_end']
     transition_time = self.config['hue_transition_time']
-    print color_end
-    print color_start
-    print transition_time
-    print group_id
-    print b
-    print prev_state
+
     b.set_group(group_id, {'hue': color_start})
     for x in range(self.config['hue_flash_count']):
       b.set_group(group_id, {'hue': color_end}, transitiontime=transition_time)
@@ -87,24 +82,24 @@ class TwitchIrc:
 
   @classmethod
   def get_sender(cls, msg):
-      result = ""
-      for char in msg:
-          if char == "!":
-              break
-          if char != ":":
-              result += char
-      return result
+    result = ""
+    for char in msg:
+      if char == "!":
+          break
+      if char != ":":
+          result += char
+    return result
 
   @classmethod
   def get_message(cls, msg):
-      result = ""
-      i = 3
-      length = len(msg)
-      while i < length:
-          result += msg[i] + " "
-          i += 1
-      result = result.lstrip(':')
-      return result
+    result = ""
+    i = 3
+    length = len(msg)
+    while i < length:
+      result += msg[i] + " "
+      i += 1
+    result = result.lstrip(':')
+    return result
 
   #@classmethod
   #def parse_message(cls, msg):
@@ -118,8 +113,6 @@ class TwitchIrc:
 # --------------------------------------------- End Command Functions ----------------------------------------------
 
   def run(self):
-    print self.config
-
     b = self.connect_hue_bridge(self.config['hue_bridge_ip'])
     b.connect()
     b.get_api()
@@ -136,39 +129,39 @@ class TwitchIrc:
     data = ""
 
     while True:
-        try:
-            data = data+con.recv(1024).decode('UTF-8')
-            data_split = re.split(r"[~\r\n]+", data)
-            data = data_split.pop()
+      try:
+        data = data+con.recv(1024).decode('UTF-8')
+        data_split = re.split(r"[~\r\n]+", data)
+        data = data_split.pop()
 
-            for line in data_split:
-                line = line.encode()
-                line = str.rstrip(line)
-                line = str.split(line)
+        for line in data_split:
+          line = line.encode()
+          line = str.rstrip(line)
+          line = str.split(line)
 
-                if len(line) >= 1:
-                    if line[0] == 'PING':
-                        self.send_pong(con, line[1])
+          if len(line) >= 1:
+            if line[0] == 'PING':
+              self.send_pong(con, line[1])
 
-                    if line[1] == 'PRIVMSG':
-                        sender = self.get_sender(line[0]).strip()
-                        message = self.get_message(line)
+            if line[1] == 'PRIVMSG':
+              sender = self.get_sender(line[0]).strip()
+              message = self.get_message(line)
 
-                        if sender.strip().lower() == "twitchnotify":
-                          if 'subscribed' in message.strip().lower():
-                            self.trigger_hue()
+              if sender.strip().lower() == "twitchnotify":
+                if 'subscribed' in message.strip().lower():
+                  self.trigger_hue()
 
-                        if sender.strip().lower() == self.config['admin_user'].lower():
-                          if message.strip().lower() == "hue":
-                            logger.info("Admin user triggered an event.")
-                            self.trigger_hue()
+              if sender.strip().lower() == self.config['admin_user'].lower():
+                if message.strip().lower() == "hue":
+                  logger.info("Admin user triggered an event.")
+                  self.trigger_hue()
 
-                        logger.debug(sender + ": " + message)
-        except UnicodeEncodeError:
-            print "Failed to parse a message"
+              logger.debug(sender + ": " + message)
+      except UnicodeEncodeError:
+        pass
 
-        except socket.error:
-            print("Socket died")
+      except socket.error:
+        logger.error("Socket died")
 
-        except socket.timeout:
-            print("Socket timeout")
+      except socket.timeout:
+        logger.error("Socket timeout")

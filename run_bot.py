@@ -21,29 +21,30 @@ from twitch_irc import TwitchIrc
 
 import docopt
 
-logger = get_logger()
+if __name__ == '__main__':
+  logger = get_logger()
 
-try:
-  arguments = docopt.docopt(__doc__)
-  print arguments
-  config = {
-    'twitch_host': arguments['--host'],
-    'twitch_port': int(arguments['--port']),
-    'twitch_channel':  arguments['--channel'],
-    'twitch_username': arguments['--username'],
-    'twitch_oauth': arguments['--oauth'],
-    'admin_user': arguments['--admin-user'],
-    'hue_bridge_ip': arguments['--hue-bridge-ip'],
-    'hue_bridge_group': arguments['--hue-bridge-group'],
-    'hue_color_start': int(arguments['--hue-color-start']),
-    'hue_color_end': int(arguments['--hue-color-end']),
-    'hue_transition_time': int(arguments['--hue-transition-time']),
-    'hue_flash_count': int(arguments['--hue-flash-count'])
-  }
+  try:
+    arguments = docopt.docopt(__doc__)
+    print arguments
+    config = {
+      'twitch_host': arguments['--host'],
+      'twitch_port': int(arguments['--port']),
+      'twitch_channel':  arguments['--channel'],
+      'twitch_username': arguments['--username'],
+      'twitch_oauth': arguments['--oauth'],
+      'admin_user': arguments['--admin-user'],
+      'hue_bridge_ip': arguments['--hue-bridge-ip'],
+      'hue_bridge_group': arguments['--hue-bridge-group'],
+      'hue_color_start': int(arguments['--hue-color-start']),
+      'hue_color_end': int(arguments['--hue-color-end']),
+      'hue_transition_time': int(arguments['--hue-transition-time']),
+      'hue_flash_count': int(arguments['--hue-flash-count'])
+    }
 
-  bot = TwitchIrc(config)
-  bot.run()
+    bot = TwitchIrc(config)
+    bot.run()
 
-except docopt.DocoptExit as e:
-  logger.error(e.message)
-  exit(1)
+  except docopt.DocoptExit as e:
+    logger.error(e.message)
+    exit(1)
