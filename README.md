@@ -1,18 +1,22 @@
 # hue-subscriber-bot
-A bot for flashing your hue bulbs when you get a subscriber.
+A bot for flashing your hue bulbs when you or a channel you're interested in get a subscriber. 
 
 Download here:
 https://github.com/gibsonje/hue-subscriber-bot/releases
 
 Run the app and click Configure.
 
-Fill in all necessary information. Leave all defaults default and don't adjust knobs until you prove it's working.
+Example Configuration:
+Twitch Username: ImCoty
+Twitch Channel: #imcoty (# followed by lowercase username)
+OAuth Token: Generate yours here: http://www.twitchapps.com/tmi/
+Admin Username: ImCoty (this is the user who can trigger a test flash via by typing "hue" into twitch chat)
+Hue Bridge IP: IP of your Hue Bridge, obtainable from the app.
+Hue Group Name: You must make a group in the hue app with a name. These are the bulbs that will flash.
 
-Channel will be a hashtag followed by the twitch username: example: "#imcoty"
-Oauth token can be generated here: http://www.twitchapps.com/tmi/
+Flash speed and other options should not be altered on your first run. Play with them later, but first ensure a successful run.
 
-Easiest way to get your Hue Bridge IP is to download the Hue Pro app and find your bridge under settings.
+** BEFORE RUNNING **
+Once your configuration is saved you must press the button on your Hue Bridge within 30 seconds prior to hitting "Start Bot".
 
-You'll need to enter a Hue Group name, this will be the bulb group that is affected.
-
-Before hitting start bot for the first time, hit the circle button on your hue bridge within 30 seconds prior.
+Once the bot is running it will echo all chat into the event list. Try typing into your Twitch channel and verify that you see the message in the bot. Try typing "hue" and see if it properly flashes your lights. 
