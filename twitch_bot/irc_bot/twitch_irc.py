@@ -5,11 +5,12 @@ import socket
 from phue import Bridge, Group
 from time import sleep
 
-logger = get_logger()
 
 class TwitchIrc:
+
   def __init__(self, config):
     self.config = config
+    self.logger = get_logger(self.__class__.__name__)
 
   @classmethod
   def light_state(cls, lights):
@@ -26,10 +27,10 @@ class TwitchIrc:
       bridge.set_light(light, 'hue', hue)
 
   def trigger_hue(self):
-    logger.info("Triggering Hue Flash")
+    self.logger.info("Triggering Hue Flash")
     hue_bridge_ip = self.config['hue_bridge_ip']
     b = self.connect_hue_bridge(hue_bridge_ip)
-
+    b.get_api()
 
     group = Group(b, self.config['hue_bridge_group'])
     group_id = group.group_id
@@ -124,7 +125,7 @@ class TwitchIrc:
     self.send_nick(con, self.config['twitch_username'])
     self.join_channel(con, self.config['twitch_channel'])
 
-    logger.info("Connected to chat.")
+    self.logger.info("Connected to chat.")
 
     data = ""
 
@@ -153,15 +154,15 @@ class TwitchIrc:
 
               if sender.strip().lower() == self.config['admin_user'].lower():
                 if message.strip().lower() == "hue":
-                  logger.info("Admin user triggered an event.")
+                  self.logger.info("Admin user triggered an event.")
                   self.trigger_hue()
 
-              logger.debug(sender + ": " + message)
+              self.logger.debug(sender + ": " + message)
       except UnicodeEncodeError:
         pass
 
       except socket.error:
-        logger.error("Socket died")
+        self.logger.error("Socket died")
 
       except socket.timeout:
-        logger.error("Socket timeout")
+        self.logger.error("Socket timeout")

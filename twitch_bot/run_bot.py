@@ -17,16 +17,16 @@ Options:
 """
 
 from log import get_logger
-from twitch_irc import TwitchIrc
+from irc_bot.twitch_irc import TwitchIrc
 
 import docopt
 
-if __name__ == '__main__':
-  logger = get_logger()
+def main():
+  logger = get_logger(__name__)
 
   try:
     arguments = docopt.docopt(__doc__)
-    print arguments
+
     config = {
       'twitch_host': arguments['--host'],
       'twitch_port': int(arguments['--port']),
@@ -48,3 +48,6 @@ if __name__ == '__main__':
   except docopt.DocoptExit as e:
     logger.error(e.message)
     exit(1)
+
+if __name__ == '__main__':
+  main()

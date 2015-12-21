@@ -15,14 +15,39 @@ class ConfigWindow(QtGui.QDialog, config.Ui_Dialog):
     self.button_box.button(QtGui.QDialogButtonBox.Close).clicked.connect(self.close)
     self.button_box.button(QtGui.QDialogButtonBox.Reset).clicked.connect(self.reset)
 
-    #self.config_button.clicked.connect(self.athing)
-    file = open('config.yml', 'w+')
-    current_config = yaml.load(file)
-    print current_config
-    #current_config.set_default("")
+    self.load()
+
+  def load(self):
+    config = {}
+    if os.path.isfile("config.yml"):
+      with open("config.yml", 'r') as config_file:
+        config = yaml.load(config_file) or {}
+
+    if config:
+      if 'username' in config:
+        self.username_textbox.setText(config['username'])
+      if 'oauth' in config:
+        self.oauth_textbox.setText(config['oauth'])
+      if 'admin-user' in config:
+        self.admin_textbox.setText(config['admin-user'])
+      if 'channel' in config:
+        self.channel_textbox.setText(config['channel'])
+      if 'hue-bridge-group' in config:
+        self.hue_group_textbox.setText(config['hue-bridge-group'])
+      if 'hue-bridge-ip' in config:
+        self.hue_ip_textbox.setText(config['hue-bridge-ip'])
+      if 'hue-color-end' in config:
+        self.color_end_textbox.setText(str(config['hue-color-end']))
+      if 'hue-color-start' in config:
+        self.color_start_textbox.setText(str(config['hue-color-start']))
+      if 'hue-flash-count' in config:
+        self.flash_count_spinner.setValue(config['hue-flash-count'])
+      if 'hue-transition-time' in config:
+        self.flash_speed_slider.setValue(config['hue-transition-time'])
 
   def save(self):
-    config = yaml.load(open('config.yml', 'w+')) or {}
+    config_file = open('config.yml', 'w+')
+    config = yaml.load(config_file) or {}
     config['host'] = "irc.twitch.tv"
     config['port'] = 6667
     config['channel'] = str(self.channel_textbox.text())
@@ -33,10 +58,17 @@ class ConfigWindow(QtGui.QDialog, config.Ui_Dialog):
     config['hue-bridge-group'] = str(self.hue_group_textbox.text())
     config['hue-color-start'] = int(str(self.color_start_textbox.text()))
     config['hue-color-end'] = int(str(self.color_end_textbox.text()))
-    config['hue-transition-time'] = self.flash_speed_slider.tickPosition()
-    config['hue-flash-count'] = self.flash_count_spinner.value()
+    config['hue-transition-time'] = int(self.flash_speed_slider.value())
+    config['hue-flash-count'] = int(self.flash_count_spinner.value())
 
-    print config
+    noalias_dumper = yaml.dumper.SafeDumper
+    noalias_dumper.ignore_aliases = lambda self, data: True
+
+    file_contents = yaml.dump(config,
+                              default_flow_style=False,
+                              Dumper=noalias_dumper)
+
+    config_file.write(file_contents)
 
   def close(self):
     self.hide()
@@ -73,8 +105,9 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
     bot_updated_signal = QtCore.pyqtSignal(str)
 
     def run(self):
-      base_path = os.path.dirname(os.path.realpath(__file__))
-      path = os.path.join(base_path,"..","run_bot.py")
+      #base_path = os.path.dirname(os.path.realpath(__file__))
+      #path = os.path.join(base_path,"..","run_bot.py")
+      path = "run_bot.py"
       command = "python {} {}".format(path,"--username=RoflMyPancakes --oauth=\"oauth:chexhqpdnw08v0p433qkttaefk26ki\" --channel=\"#roflmypancakes\" --admin-user=RoflMyPancakes --hue-bridge-ip=\"192.168.3.129\" --hue-bridge-group=Inside")
 
       proc = subprocess.Popen(command,

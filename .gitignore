@@ -1,3 +1,6 @@
 *.pyc
 .idea
 config.yml
+*.spec
+build
+dist
