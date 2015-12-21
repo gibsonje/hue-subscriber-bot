@@ -2,7 +2,10 @@ from PyQt4 import QtGui, QtCore
 import sys, os
 import hue_bot
 import config
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, Manager
+if sys.platform == 'win32':
+    import multiprocessing.reduction    # make sockets pickable/inheritable
+
 from cStringIO import StringIO
 
 import subprocess
@@ -146,9 +149,7 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
           snake_config['hue_transition_time']*=10
           bot = TwitchIrc(snake_config)
 
-          p = Process(target=bot.run, args=())
-          p.start()
-          p.join()
+          bot.run()
 
   def start_bot(self):
     app = QtCore.QCoreApplication.instance()
@@ -161,7 +162,7 @@ def main():
   app = QtGui.QApplication(sys.argv)
   form = MainWindow()
 
-  queue = Queue()
+  queue = Manager().Queue()
   sys.stdout = WriteStream(queue)
 
   # Create thread that will listen on the other end of the queue, and send the text to the textedit in our application
