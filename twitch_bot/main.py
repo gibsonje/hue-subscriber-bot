@@ -12,6 +12,8 @@ import subprocess
 import yaml
 
 from twitch_irc import TwitchIrc
+from log import get_logger
+logger = get_logger(__name__)
 
 # The new Stream Object which replaces the default stream associated with sys.stdout
 # This object just puts data in a queue!
@@ -149,7 +151,10 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
           snake_config['hue_transition_time']*=10
           bot = TwitchIrc(snake_config)
 
-          bot.run()
+          try:
+            bot.run()
+          except Exception as e:
+            logger.error("Failed to start bot.")
 
   def start_bot(self):
     app = QtCore.QCoreApplication.instance()
@@ -157,12 +162,11 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
     self.bot_thread.finished.connect(app.exit)
     self.bot_thread.start()
 
-
 def main():
   app = QtGui.QApplication(sys.argv)
   form = MainWindow()
 
-  queue = Manager().Queue()
+  queue = Queue()
   sys.stdout = WriteStream(queue)
 
   # Create thread that will listen on the other end of the queue, and send the text to the textedit in our application
