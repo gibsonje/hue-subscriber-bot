@@ -6,6 +6,13 @@ import config
 import subprocess
 import yaml
 
+
+
+def resource_path(relative):
+  if hasattr(sys, "_MEIPASS"):
+    return os.path.join(sys._MEIPASS, relative)
+  return os.path.join(relative)
+
 class ConfigWindow(QtGui.QDialog, config.Ui_Dialog):
   def __init__(self, parent=None):
     super(ConfigWindow, self).__init__(parent)
@@ -105,9 +112,8 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
     bot_updated_signal = QtCore.pyqtSignal(str)
 
     def run(self):
-      #base_path = os.path.dirname(os.path.realpath(__file__))
-      #path = os.path.join(base_path,"..","run_bot.py")
-      path = "run_bot.py"
+      path = resource_path('run_bot.py')
+
       command = "python {} {}".format(path,"--username=RoflMyPancakes --oauth=\"oauth:chexhqpdnw08v0p433qkttaefk26ki\" --channel=\"#roflmypancakes\" --admin-user=RoflMyPancakes --hue-bridge-ip=\"192.168.3.129\" --hue-bridge-group=Inside")
 
       proc = subprocess.Popen(command,
