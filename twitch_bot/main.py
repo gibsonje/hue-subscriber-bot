@@ -130,20 +130,6 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
           bot = TwitchIrc(snake_config)
           bot.run()
 
-      #path = resource_path('run_bot.py')
-
-      #command = "python {} {}".format(path,"--username=RoflMyPancakes --oauth=\"oauth:chexhqpdnw08v0p433qkttaefk26ki\" --channel=\"#roflmypancakes\" --admin-user=RoflMyPancakes --hue-bridge-ip=\"192.168.3.129\" --hue-bridge-group=Inside")
-
-      #proc = subprocess.Popen(command,
-      #                 shell=True,
-      #                 stdout=subprocess.PIPE,
-      #                 )
-
-      #lines_iterator = iter(proc.stdout.readline, b"")
-      #for line in lines_iterator:
-      #  if line:
-      #    self.bot_updated_signal.emit(str(line))
-
 
   def start_bot(self):
     app = QtCore.QCoreApplication.instance()
