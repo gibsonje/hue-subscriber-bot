@@ -1,20 +1,16 @@
 # hue-subscriber-bot
 A bot for flashing your hue bulbs when you get a subscriber.
 
-## Running on Windows
+Download here:
+https://github.com/gibsonje/hue-subscriber-bot/releases
 
+Run the app and click Configure.
 
-Download and install Python 2:
-https://www.python.org/ftp/python/2.7.10/python-2.7.10.msi
+Fill in all necessary information. Leave all defaults default and don't adjust knobs until you prove it's working.
 
-1. Open powershell and copy&paste(right click) this:
+Channel will be a hashtag followed by the twitch username: example: "#imcoty"
+Oauth token can be generated here: http://www.twitchapps.com/tmi/
 
-`[Environment]::SetEnvironmentVariable("Path", "$env:Path;C:\Python27\;C:\Python27\Scripts\", "User")`
+Easiest way to get your Hue Bridge IP is to download the Hue Pro app and find your bridge under settings.
 
-2. Download get-pip.py here: https://raw.github.com/pypa/pip/master/contrib/get-pip.py
-3. Doubleclick to install it
-4. Open a command prompt and type "pip install phue"
-
-Now download run.py, change all relevant settings, and double click it.
-
-The first time you run this you will need to hit your hue bridge's search button within 30 seconds of running it.
+You'll need to enter a Hue Group name, this will be the bulb group that is affected.
