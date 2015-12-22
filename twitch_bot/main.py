@@ -141,6 +141,8 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
     self.config_gui = ConfigWindow()
     self.config_gui.hide()
 
+    self.bot_thread = None
+
   def open_config(self):
     self.config_gui.show()
 
@@ -172,8 +174,6 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
             raise e
 
   def test_hue_connection(self, config):
-    bot = TwitchIrc(config)
-
     def cancel():
       raise Exception("Cancelled retry process.")
 
@@ -181,8 +181,9 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
       self.test_hue_connection(config)
 
     try:
-      bot.connect_hue_bridge(config['hue-bridge-ip'])
+      phue.Bridge(config['hue-bridge-ip'])
     except Exception as e:
+      logger.error(e.message)
       dialog = HueRetryBox()
       dialog.button_box.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(cancel)
       dialog.button_box.button(QtGui.QDialogButtonBox.Retry).clicked.connect(retry)
@@ -190,6 +191,9 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
       dialog.exec_()
 
   def start_bot(self):
+    if self.bot_thread:
+      self.bot_thread.terminate()
+
     if os.path.isfile("config.yml"):
       with open("config.yml", 'r') as config_file:
         config = yaml.load(config_file) or {}
