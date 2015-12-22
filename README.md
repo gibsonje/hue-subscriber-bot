@@ -1,22 +1,24 @@
-# hue-subscriber-bot
-A bot for flashing your hue bulbs when you or a channel you're interested in get a subscriber. 
+hue-subscriber-bot
+====================
+An IRC monitoring bot that flashes your Hue lights when somebody subscribes to a specified channel.
 
-Download here:
+Download a Windows Executable here:
 https://github.com/gibsonje/hue-subscriber-bot/releases
 
-Run the app and click Configure.
+Run the file *"main.exe"* and click Configure.
 
 Example Configuration:
-Twitch Username: ImCoty
-Twitch Channel: #imcoty (# followed by lowercase username)
-OAuth Token: Generate yours here: http://www.twitchapps.com/tmi/
-Admin Username: ImCoty (this is the user who can trigger a test flash via by typing "hue" into twitch chat)
-Hue Bridge IP: IP of your Hue Bridge, obtainable from the app.
-Hue Group Name: You must make a group in the hue app with a name. These are the bulbs that will flash.
+  * **Twitch Username:** ImCoty
+  * **Twitch Channel:** #imcoty *('#' followed by lowercase username)*
+  * **OAuth Token:** Generate yours here: http://www.twitchapps.com/tmi/
+  * **Admin Username:** ImCoty *(This user can trigger your lights to flash by typing "hue" into Twitch chat.)*
+  * **Hue Bridge IP:** IP of your Hue Bridge. You can get this within the Hue app. //TODO: Explain how.
+  * **Hue Group Name:** You must make a group in the hue app with a name. These are the bulbs that will flash. //TODO: Explain how
 
-Flash speed and other options should not be altered on your first run. Play with them later, but first ensure a successful run.
+You should leave Flash Speed and other options at their defaults for the first run.
 
-** BEFORE RUNNING **
-Once your configuration is saved you must press the button on your Hue Bridge within 30 seconds prior to hitting "Start Bot".
+BEFORE RUNNING
+==============
+Press the button on the Hue Bridge before you hit "Start Bot"
 
-Once the bot is running it will echo all chat into the event list. Try typing into your Twitch channel and verify that you see the message in the bot. Try typing "hue" and see if it properly flashes your lights. 
+If everything works you'll start to see the Twitch chat in the bot's window. You can test that the Hue lights are working by typing "hue" into your chat.
