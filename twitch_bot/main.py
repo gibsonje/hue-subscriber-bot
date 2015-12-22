@@ -191,8 +191,7 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
       dialog.exec_()
 
   def start_bot(self):
-    if self.bot_thread:
-      self.bot_thread.terminate()
+    self.start_button.setEnabled(False)
 
     if os.path.isfile("config.yml"):
       with open("config.yml", 'r') as config_file:
