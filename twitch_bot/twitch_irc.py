@@ -29,18 +29,45 @@ class TwitchIrc:
   def trigger_hue(self):
     self.logger.info("Triggering Hue Flash")
     hue_bridge_ip = self.config['hue_bridge_ip']
+    self.logger.debug("Connecting to Hue Bridge")
     b = self.connect_hue_bridge(hue_bridge_ip)
-    b.get_api()
+    api_result = b.get_api()
+    self.logger.debug("Connected to Hue Bridge")
+    self.logger.debug("*** Hue Debug Info: ***")
+    self.logger.debug(api_result)
 
-    group = Group(b, self.config['hue_bridge_group'])
-    group_id = group.group_id
+    names = [v.get('name','NO NAME') for k,v in api_result['groups'].iteritems()]
+    msg = "Groups found: {}".format(str(names))
+    self.logger.debug(msg)
 
+    try:
+      group = Group(b, self.config['hue_bridge_group'])
+      group_id = group.group_id
+    except (TypeError, LookupError) as e:
+      self.logger.error("*** Failed to get group. ***")
+      self.logger.error(e.message)
+      self.logger.error("Defaulting to first group found...")
+      group_info = api_result['groups'].itervalues().next()
+      try:
+        self.logger.debug(group_info)
+        name = str(group_info['name'])
+        self.logger.debug("Connecting to group {}", name)
+        group = Group(b, name)
+        group_id = group.group_id
+      except (TypeError, LookupError) as e:
+        self.logger.error("Failed to connect to backup group.")
+        raise e
+    else:
+      self.logger.debug("~*** Successfully connected to Hue Group! ***~")
+
+    self.logger.debug("Saving current light state.")
     prev_state = self.light_state(group.lights)
 
     color_start = self.config['hue_color_start']
     color_end = self.config['hue_color_end']
     transition_time = self.config['hue_transition_time']
 
+    self.logger.debug("Beginning flashes.")
     b.set_group(group_id, {'hue': color_start})
     for x in range(self.config['hue_flash_count']):
       b.set_group(group_id, {'hue': color_end}, transitiontime=transition_time)
@@ -48,6 +75,7 @@ class TwitchIrc:
       b.set_group(group_id, {'hue': color_start}, transitiontime=transition_time)
       sleep(transition_time / 10)
 
+    self.logger.debug("Resetting lights to previous state.")
     self.set_state(b, prev_state)
 
   @classmethod
@@ -166,3 +194,8 @@ class TwitchIrc:
 
       except socket.timeout:
         self.logger.error("Socket timeout")
+
+      except Exception as e:
+        self.logger.debug("**** UNEXPECTED ERROR ****")
+        self.logger.error(type(e))
+        self.logger.error(e.message)
