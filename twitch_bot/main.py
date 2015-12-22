@@ -1,6 +1,7 @@
 from PyQt4 import QtGui, QtCore
 import sys, os
 import hue_bot
+import phue
 import config
 from multiprocessing import Process, Queue, Manager
 if sys.platform == 'win32':
@@ -153,13 +154,15 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
 
           try:
             bot.run()
+          except phue.PhueRegistrationException as e:
+            logger.error("Failed to register with the Hue Bridge. Push the button on the bridge.")
           except Exception as e:
             logger.error("Failed to start bot.")
+            raise e
 
   def start_bot(self):
     app = QtCore.QCoreApplication.instance()
     self.bot_thread = self.BotThread()
-    self.bot_thread.finished.connect(app.exit)
     self.bot_thread.start()
 
 def main():
