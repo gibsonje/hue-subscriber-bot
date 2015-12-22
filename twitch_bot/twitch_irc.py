@@ -142,6 +142,7 @@ class TwitchIrc:
 # --------------------------------------------- End Command Functions ----------------------------------------------
 
   def run(self):
+
     b = self.connect_hue_bridge(self.config['hue_bridge_ip'])
     b.connect()
     b.get_api()

@@ -3,6 +3,8 @@ import sys, os
 import hue_bot
 import phue
 import config
+import hue_retry_box
+
 from multiprocessing import Process, Queue, Manager
 if sys.platform == 'win32':
     import multiprocessing.reduction    # make sockets pickable/inheritable
@@ -114,6 +116,20 @@ class ConfigWindow(QtGui.QDialog, config.Ui_Dialog):
   def reset(self):
     pass
 
+
+class HueRetryBox(QtGui.QDialog, hue_retry_box.Ui_Dialog):
+  def __init__(self, parent=None):
+    super(HueRetryBox, self).__init__(parent)
+    self.setupUi(self)
+
+    self.button_box.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(self.close)
+    self.button_box.button(QtGui.QDialogButtonBox.Retry).clicked.connect(self.retry)
+
+  def retry(self):
+    self.close()
+
+
+
 class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
   def __init__(self, parent=None):
     super(MainWindow, self).__init__(parent)
@@ -131,14 +147,9 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
   def update_list(self, line):
     self.text_list.addItem(line)
 
-
-
   class BotThread(QtCore.QThread):
 
     def run(self):
-      # FIXME: This is some hackathon level shit right here
-      # I spent about 12 hours on a really fancy way to share output
-      # with a thread, but it did not bundle with installers well...
       if os.path.isfile("config.yml"):
         with open("config.yml", 'r') as config_file:
           config = yaml.load(config_file) or {}
@@ -160,10 +171,31 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
             logger.error("Failed to start bot.")
             raise e
 
+  def test_hue_connection(self, config):
+    bot = TwitchIrc(config)
+
+    def cancel():
+      raise Exception("Cancelled retry process.")
+
+    def retry():
+      self.test_hue_connection(config)
+
+    try:
+      bot.connect_hue_bridge(config['hue-bridge-ip'])
+    except Exception as e:
+      dialog = HueRetryBox()
+      dialog.button_box.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(cancel)
+      dialog.button_box.button(QtGui.QDialogButtonBox.Retry).clicked.connect(retry)
+
+      dialog.exec_()
+
   def start_bot(self):
-    app = QtCore.QCoreApplication.instance()
-    self.bot_thread = self.BotThread()
-    self.bot_thread.start()
+    if os.path.isfile("config.yml"):
+      with open("config.yml", 'r') as config_file:
+        config = yaml.load(config_file) or {}
+        self.test_hue_connection(config)
+        self.bot_thread = self.BotThread()
+        self.bot_thread.start()
 
 def main():
   app = QtGui.QApplication(sys.argv)
