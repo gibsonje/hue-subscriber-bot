@@ -170,6 +170,19 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>username_textbox</tabstop>
+  <tabstop>channel_textbox</tabstop>
+  <tabstop>oauth_textbox</tabstop>
+  <tabstop>admin_textbox</tabstop>
+  <tabstop>hue_ip_textbox</tabstop>
+  <tabstop>hue_group_textbox</tabstop>
+  <tabstop>flash_speed_slider</tabstop>
+  <tabstop>flash_count_spinner</tabstop>
+  <tabstop>color_start_textbox</tabstop>
+  <tabstop>color_end_textbox</tabstop>
+  <tabstop>button_box</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

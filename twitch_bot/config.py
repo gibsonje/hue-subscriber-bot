@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file './config.ui'
 #
-# Created: Sun Dec 20 12:45:38 2015
+# Created: Mon Dec 21 23:21:10 2015
 #      by: PyQt4 UI code generator 4.11.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -106,6 +106,16 @@ class Ui_Dialog(object):
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
+        Dialog.setTabOrder(self.username_textbox, self.channel_textbox)
+        Dialog.setTabOrder(self.channel_textbox, self.oauth_textbox)
+        Dialog.setTabOrder(self.oauth_textbox, self.admin_textbox)
+        Dialog.setTabOrder(self.admin_textbox, self.hue_ip_textbox)
+        Dialog.setTabOrder(self.hue_ip_textbox, self.hue_group_textbox)
+        Dialog.setTabOrder(self.hue_group_textbox, self.flash_speed_slider)
+        Dialog.setTabOrder(self.flash_speed_slider, self.flash_count_spinner)
+        Dialog.setTabOrder(self.flash_count_spinner, self.color_start_textbox)
+        Dialog.setTabOrder(self.color_start_textbox, self.color_end_textbox)
+        Dialog.setTabOrder(self.color_end_textbox, self.button_box)
 
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(_translate("Dialog", "Dialog", None))
