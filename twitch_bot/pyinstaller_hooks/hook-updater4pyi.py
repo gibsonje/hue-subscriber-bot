@@ -1,6 +1,4 @@
-
 # hook for pyinstaller
-
 import updater4pyi
 import updater4pyi.util
 import os.path

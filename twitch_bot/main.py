@@ -3,6 +3,7 @@ import sys, os
 from cStringIO import StringIO
 import subprocess
 import yaml
+from datetime import datetime
 
 import hue_bot
 import phue
@@ -17,7 +18,7 @@ from updater4pyi.upd_iface_pyqt4 import UpdatePyQt4Interface
 
 from multiprocessing import Process, Queue, Manager
 if sys.platform == 'win32':
-    import multiprocessing.reduction    # make sockets pickable/inheritable
+  import multiprocessing.reduction    # make sockets pickable/inheritable
 
 logger = get_logger(__name__)
 
@@ -112,6 +113,7 @@ class ConfigWindow(QtGui.QDialog, config.Ui_Dialog):
                               Dumper=noalias_dumper)
 
     config_file.write(file_contents)
+    config_file.close()
 
   def close(self):
     self.hide()
@@ -226,9 +228,26 @@ def main():
   app.exec_()
 
 def check_for_update():
-  try:
-    upd_log.setup_logger(level=20)
+  #Load saved settings, if any.
+  def save_config(config):
+    with open("config.yml", "w") as config_file:
+      noalias_dumper = yaml.dumper.SafeDumper
+      noalias_dumper.ignore_aliases = lambda self, data: True
 
+      file_contents = yaml.dump(config,
+                                default_flow_style=False,
+                                Dumper=noalias_dumper)
+
+      config_file.write(file_contents)
+  def load_config ():
+    if os.path.isfile("config.yml"):
+      with open("config.yml", 'r') as config_file:
+        config = yaml.load(config_file) or {}
+        return config
+    return {}
+
+  try:
+    upd_log.setup_logger(level=1)
     swu_source = upd_source.UpdateGithubReleasesSource('gibsonje/hue-subscriber-bot')
     swu_updater = upd_core.Updater( current_version=package_version,
                                     update_source=swu_source)
@@ -238,15 +257,34 @@ def check_for_update():
 
                           parent=QtGui.QApplication.instance())
 
-    update_available = swu_updater.check_for_updates()
+    config = load_config()
+    if config.get('use_updater', True):
+      available_update = swu_updater.check_for_updates()
+      logger.debug("Current Version: %s", swu_updater.current_version())
 
-    logger.debug("Current Version: %s", swu_updater.current_version())
+      if available_update:
+        logger.info("Update available!")
+        if swu_interface.ask_to_update(available_update):
+          def download_file(url, fdst):
+            import requests
+            logger.debug("fetching URL %s to temp file...", url)
 
-    if update_available:
-      logger.info("Update available!")
-      swu_interface.ask_to_update(update_available)
+            r = requests.get(url, stream=True)
+            for chunk in r.iter_content(chunk_size=1024):
+                if chunk: # filter out keep-alive new chunks
+                    fdst.write(chunk)
+
+            logger.debug("... done.")
+          swu_updater.download_file = download_file
+          swu_updater.install_update(available_update)
+      else:
+        logger.info("Already up to date!")
+
     else:
-      logger.info("Already up to date!")
+      #Ask the user to turn on auto-update #TODO: Usability
+      response = swu_interface.ask_first_time()
+      config['use_updater'] = response
+      save_config(config)
 
   except Exception as e:
     logger.error("Updater Failed")
