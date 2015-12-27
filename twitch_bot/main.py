@@ -3,6 +3,7 @@ import sys, os
 from cStringIO import StringIO
 import subprocess
 import yaml
+import logging
 from datetime import datetime
 
 import hue_bot
@@ -224,12 +225,18 @@ def main():
 
   # Only tested for Windows currently
   if sys.platform == 'win32':
-    check_for_update()
+    update_thread = check_for_update(queue)
+
   app.exec_()
 
-def check_for_update():
+class UpdateThread(QtCore.QThread):
+  def __init__(self, q):
+    super(UpdateThread, self).__init__()
+    self.queue = q
+    sys.stdout = WriteStream(q)
+
   #Load saved settings, if any.
-  def save_config(config):
+  def save_config(self, config):
     with open("config.yml", "w") as config_file:
       noalias_dumper = yaml.dumper.SafeDumper
       noalias_dumper.ignore_aliases = lambda self, data: True
@@ -239,56 +246,71 @@ def check_for_update():
                                 Dumper=noalias_dumper)
 
       config_file.write(file_contents)
-  def load_config ():
+
+  def load_config (self):
     if os.path.isfile("config.yml"):
       with open("config.yml", 'r') as config_file:
         config = yaml.load(config_file) or {}
         return config
     return {}
 
-  try:
-    upd_log.setup_logger(level=1)
-    swu_source = upd_source.UpdateGithubReleasesSource('gibsonje/hue-subscriber-bot')
-    swu_updater = upd_core.Updater( current_version=package_version,
-                                    update_source=swu_source)
-    swu_interface = UpdatePyQt4Interface(swu_updater,
-                          progname='hue-subscriber-bot',
-                          ask_before_checking=False,
+  def run(self):
+    try:
+      stream = WriteStream(self.queue)
+      upd_log.setup_logger(1)
 
-                          parent=QtGui.QApplication.instance())
+      ch = logging.StreamHandler(stream)
+      ch.setLevel(logging.DEBUG)
+      upd_log.logger.addHandler(ch)
+      logger.addHandler(ch)
 
-    config = load_config()
-    if config.get('use_updater', True):
-      available_update = swu_updater.check_for_updates()
-      logger.debug("Current Version: %s", swu_updater.current_version())
+      swu_source = upd_source.UpdateGithubReleasesSource('gibsonje/hue-subscriber-bot')
+      swu_updater = upd_core.Updater( current_version=package_version,
+                                      update_source=swu_source)
+      swu_interface = UpdatePyQt4Interface(swu_updater,
+                            progname='hue-subscriber-bot',
+                            ask_before_checking=False,
 
-      if available_update:
-        logger.info("Update available!")
-        if swu_interface.ask_to_update(available_update):
-          def download_file(url, fdst):
-            import requests
-            logger.debug("fetching URL %s to temp file...", url)
+                            parent=QtGui.QApplication.instance())
 
-            r = requests.get(url, stream=True)
-            for chunk in r.iter_content(chunk_size=1024):
-                if chunk: # filter out keep-alive new chunks
-                    fdst.write(chunk)
+      config = self.load_config()
+      if config.get('use_updater', True):
+        available_update = swu_updater.check_for_updates()
+        logger.info("Current Version: %s", swu_updater.current_version())
 
-            logger.debug("... done.")
-          swu_updater.download_file = download_file
-          swu_updater.install_update(available_update)
+        if available_update:
+          logger.info("Update available!")
+          if swu_interface.ask_to_update(available_update):
+            def download_file(url, fdst):
+              import requests
+              logger.debug("fetching URL %s to temp file...", url)
+
+              r = requests.get(url, stream=True)
+              for chunk in r.iter_content(chunk_size=1024):
+                  if chunk: # filter out keep-alive new chunks
+                      fdst.write(chunk)
+
+              logger.debug("... done.")
+            swu_updater.download_file = download_file
+            swu_updater.install_update(available_update)
+        else:
+          logger.info("Already up to date!")
       else:
-        logger.info("Already up to date!")
+        #Ask the user to turn on auto-update #TODO: Usability
+        response = swu_interface.ask_first_time()
+        config['use_updater'] = response
+        self.save_config(config)
 
-    else:
-      #Ask the user to turn on auto-update #TODO: Usability
-      response = swu_interface.ask_first_time()
-      config['use_updater'] = response
-      save_config(config)
+    except Exception as e:
+      logger.error("Updater Failed")
+      logger.error(e)
 
-  except Exception as e:
-    logger.error("Updater Failed")
-    logger.error(e)
+def check_for_update(queue):
+  sys.stdout = WriteStream(queue)
+  thread = UpdateThread(queue)
+  thread.start()
+  return thread
+
 
 if __name__ == '__main__':
   main()

@@ -30,5 +30,5 @@ check_output(['pyinstaller',
      '--additional-hooks-dir={}'.format(hooks_dir),
      '--noconfirm',
      '--name=HueBot',
-     #'--windowed'
+     '--windowed'
     ] + bonus_args)
