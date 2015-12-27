@@ -223,15 +223,11 @@ def main():
   # Only tested for Windows currently
   if sys.platform == 'win32':
     check_for_update()
-
   app.exec_()
 
 def check_for_update():
   try:
-    logger.debug(upd_downloader.CERT_FILE)
-
-    upd_log.setup_logger(level=1)
-
+    upd_log.setup_logger(level=20)
 
     swu_source = upd_source.UpdateGithubReleasesSource('gibsonje/hue-subscriber-bot')
     swu_updater = upd_core.Updater( current_version=package_version,
