@@ -1,21 +1,24 @@
 from PyQt4 import QtGui, QtCore
 import sys, os
+from cStringIO import StringIO
+import subprocess
+import yaml
+
 import hue_bot
 import phue
 import config
 import hue_retry_box
+from twitch_irc import TwitchIrc
+from log import get_logger
+from version import package_version
+
+from updater4pyi import upd_source, upd_core, upd_log, upd_downloader
+from updater4pyi.upd_iface_pyqt4 import UpdatePyQt4Interface
 
 from multiprocessing import Process, Queue, Manager
 if sys.platform == 'win32':
     import multiprocessing.reduction    # make sockets pickable/inheritable
 
-from cStringIO import StringIO
-
-import subprocess
-import yaml
-
-from twitch_irc import TwitchIrc
-from log import get_logger
 logger = get_logger(__name__)
 
 # The new Stream Object which replaces the default stream associated with sys.stdout
@@ -216,7 +219,42 @@ def main():
   thread.start()
 
   form.show()
+
+  # Only tested for Windows currently
+  if sys.platform == 'win32':
+    check_for_update()
+
   app.exec_()
+
+def check_for_update():
+  try:
+    logger.debug(upd_downloader.CERT_FILE)
+
+    upd_log.setup_logger(level=1)
+
+
+    swu_source = upd_source.UpdateGithubReleasesSource('gibsonje/hue-subscriber-bot')
+    swu_updater = upd_core.Updater( current_version=package_version,
+                                    update_source=swu_source)
+    swu_interface = UpdatePyQt4Interface(swu_updater,
+                          progname='hue-subscriber-bot',
+                          ask_before_checking=False,
+
+                          parent=QtGui.QApplication.instance())
+
+    update_available = swu_updater.check_for_updates()
+
+    logger.debug("Current Version: %s", swu_updater.current_version())
+
+    if update_available:
+      logger.info("Update available!")
+      swu_interface.ask_to_update(update_available)
+    else:
+      logger.info("Already up to date!")
+
+  except Exception as e:
+    logger.error("Updater Failed")
+    logger.error(e)
 
 if __name__ == '__main__':
   main()
