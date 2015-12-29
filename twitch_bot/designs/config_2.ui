@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>496</width>
-    <height>500</height>
+    <height>527</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,12 +15,12 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QTabWidget" name="tabWidget">
+    <widget class="QTabWidget" name="tabs">
      <property name="whatsThis">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="twitch_tab">
       <property name="whatsThis">
@@ -35,7 +35,7 @@
       <attribute name="title">
        <string>Twitch</string>
       </attribute>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -112,28 +112,8 @@
           </property>
          </widget>
         </item>
-        <item row="6" column="1">
-         <widget class="QDialogButtonBox" name="dialog_buttons">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="standardButtons">
-           <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
-      <zorder>username_text</zorder>
-      <zorder>label</zorder>
-      <zorder>username_text</zorder>
-      <zorder>username_text</zorder>
-      <zorder>label</zorder>
-      <zorder>layoutWidget</zorder>
-      <zorder>channel_text</zorder>
-      <zorder>label_2</zorder>
-      <zorder>layoutWidget_2</zorder>
-      <zorder>oauth_btn</zorder>
      </widget>
      <widget class="QWidget" name="hue_tab">
       <attribute name="title">
@@ -150,14 +130,14 @@
        </property>
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="0" column="4">
-         <widget class="QPushButton" name="pushButton_5">
+         <widget class="QPushButton" name="color_picker_2_btn">
           <property name="text">
            <string>Color Picker</string>
           </property>
          </widget>
         </item>
         <item row="0" column="2">
-         <widget class="QGraphicsView" name="graphicsView_2">
+         <widget class="QGraphicsView" name="flash_color_2_graphic">
           <property name="maximumSize">
            <size>
             <width>25</width>
@@ -215,17 +195,17 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QLineEdit" name="lineEdit_7"/>
+         <widget class="QLineEdit" name="flash_color_2"/>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>20</y>
+         <y>10</y>
          <width>431</width>
-         <height>59</height>
+         <height>71</height>
         </rect>
        </property>
        <layout class="QFormLayout" name="formLayout_2">
@@ -252,7 +232,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -281,7 +261,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -292,14 +272,14 @@
        </property>
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="4">
-         <widget class="QPushButton" name="pushButton_4">
+         <widget class="QPushButton" name="color_picker_1_btn">
           <property name="text">
            <string>Color Picker</string>
           </property>
          </widget>
         </item>
         <item row="0" column="2">
-         <widget class="QGraphicsView" name="graphicsView">
+         <widget class="QGraphicsView" name="flash_color_1_graphic">
           <property name="maximumSize">
            <size>
             <width>25</width>
@@ -357,11 +337,11 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QLineEdit" name="lineEdit_6"/>
+         <widget class="QLineEdit" name="flash_color_1"/>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -382,7 +362,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QSlider" name="horizontalSlider">
+         <widget class="QSlider" name="flash_speed_slider">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -390,7 +370,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -408,11 +388,11 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QSpinBox" name="spinBox"/>
+         <widget class="QSpinBox" name="hue_flash_count_spin_box"/>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>340</x>
@@ -442,6 +422,16 @@
        </layout>
       </widget>
      </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="dialog_buttons">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok|QDialogButtonBox::Save</set>
+     </property>
     </widget>
    </item>
   </layout>

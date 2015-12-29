@@ -8,11 +8,11 @@ from datetime import datetime
 
 import hue_bot
 import phue
-import config
 import hue_retry_box
 from twitch_irc import TwitchIrc
 from log import get_logger
 from version import package_version
+from gui.config import config_window
 
 from updater4pyi import upd_source, upd_core, upd_log, upd_downloader
 from updater4pyi.upd_iface_pyqt4 import UpdatePyQt4Interface
@@ -51,78 +51,6 @@ class MyReceiver(QtCore.QObject):
       text = self.queue.get()
       self.mysignal.emit(text)
 
-class ConfigWindow(QtGui.QDialog, config.Ui_Dialog):
-  def __init__(self, parent=None):
-    super(ConfigWindow, self).__init__(parent)
-    self.setupUi(self)
-
-    self.button_box.button(QtGui.QDialogButtonBox.Save).clicked.connect(self.save)
-    self.button_box.button(QtGui.QDialogButtonBox.Close).clicked.connect(self.close)
-    self.button_box.button(QtGui.QDialogButtonBox.Reset).clicked.connect(self.reset)
-
-    self.load()
-
-  def load(self):
-    config = {}
-    if os.path.isfile("config.yml"):
-      with open("config.yml", 'r') as config_file:
-        config = yaml.load(config_file) or {}
-
-    if config:
-      if 'username' in config:
-        self.username_textbox.setText(config['username'])
-      if 'oauth' in config:
-        self.oauth_textbox.setText(config['oauth'])
-      if 'admin-user' in config:
-        self.admin_textbox.setText(config['admin-user'])
-      if 'channel' in config:
-        self.channel_textbox.setText(config['channel'])
-      if 'hue-bridge-group' in config:
-        self.hue_group_textbox.setText(config['hue-bridge-group'])
-      if 'hue-bridge-ip' in config:
-        self.hue_ip_textbox.setText(config['hue-bridge-ip'])
-      if 'hue-color-end' in config:
-        self.color_end_textbox.setText(str(config['hue-color-end']))
-      if 'hue-color-start' in config:
-        self.color_start_textbox.setText(str(config['hue-color-start']))
-      if 'hue-flash-count' in config:
-        self.flash_count_spinner.setValue(config['hue-flash-count'])
-      if 'hue-transition-time' in config:
-        self.flash_speed_slider.setValue(config['hue-transition-time'])
-
-  def save(self):
-    config_file = open('config.yml', 'w+')
-    config = yaml.load(config_file) or {}
-    config['host'] = "irc.twitch.tv"
-    config['port'] = 6667
-    config['channel'] = str(self.channel_textbox.text())
-    config['username'] = str(self.username_textbox.text())
-    config['oauth'] = str(self.oauth_textbox.text())
-    config['admin-user'] = str(self.admin_textbox.text())
-    config['hue-bridge-ip'] = str(self.hue_ip_textbox.text())
-    config['hue-bridge-group'] = str(self.hue_group_textbox.text())
-    config['hue-color-start'] = int(str(self.color_start_textbox.text()))
-    config['hue-color-end'] = int(str(self.color_end_textbox.text()))
-    config['hue-transition-time'] = int(self.flash_speed_slider.value())
-    config['hue-flash-count'] = int(self.flash_count_spinner.value())
-
-    noalias_dumper = yaml.dumper.SafeDumper
-    noalias_dumper.ignore_aliases = lambda self, data: True
-
-    file_contents = yaml.dump(config,
-                              default_flow_style=False,
-                              Dumper=noalias_dumper)
-
-    config_file.write(file_contents)
-    config_file.close()
-
-  def close(self):
-    self.hide()
-
-  def reset(self):
-    pass
-
-
 class HueRetryBox(QtGui.QDialog, hue_retry_box.Ui_Dialog):
   def __init__(self, parent=None):
     super(HueRetryBox, self).__init__(parent)
@@ -134,8 +62,6 @@ class HueRetryBox(QtGui.QDialog, hue_retry_box.Ui_Dialog):
   def retry(self):
     self.close()
 
-
-
 class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
   def __init__(self, parent=None):
     super(MainWindow, self).__init__(parent)
@@ -144,12 +70,13 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
     self.config_button.clicked.connect(self.open_config)
     self.start_button.clicked.connect(self.start_bot)
 
-    self.config_gui = ConfigWindow()
+    self.config_gui = config_window.ConfigWindow()
     self.config_gui.hide()
 
     self.bot_thread = None
 
   def open_config(self):
+    self.config_gui.load()
     self.config_gui.show()
 
   def update_list(self, line):
