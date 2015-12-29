@@ -76,8 +76,7 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
       hue = util.hue_65535_to_365(hue)
       logger.info(str(hue))
 
-      color = QtGui.QColor.fromHsv(hue, 128, 128)
-      logger.info(color)
+      color = QtGui.QColor.fromHsv(hue, 255, 255)
       brush = QtGui.QBrush()
       brush.setColor(color)
       logger.info(brush)
@@ -87,7 +86,7 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
       logger.info(scene)
 
       box.setScene(scene)
-      #box.render(QtGui.QPainter())
+      box.render(QtGui.QPainter())
 
     paint_box(self.flash_color_1_graphic, config['hue-color-start'])
     paint_box(self.flash_color_2_graphic, config['hue-color-end'])

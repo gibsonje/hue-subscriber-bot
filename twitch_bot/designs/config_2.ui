@@ -129,64 +129,6 @@
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="0" column="4">
-         <widget class="QPushButton" name="color_picker_2_btn">
-          <property name="text">
-           <string>Color Picker</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QGraphicsView" name="flash_color_2_graphic">
-          <property name="maximumSize">
-           <size>
-            <width>25</width>
-            <height>25</height>
-           </size>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Plain</enum>
-          </property>
-          <property name="lineWidth">
-           <number>1</number>
-          </property>
-          <property name="verticalScrollBarPolicy">
-           <enum>Qt::ScrollBarAsNeeded</enum>
-          </property>
-          <property name="backgroundBrush">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>255</red>
-             <green>0</green>
-             <blue>4</blue>
-            </color>
-           </brush>
-          </property>
-          <property name="foregroundBrush">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>255</red>
-             <green>0</green>
-             <blue>4</blue>
-            </color>
-           </brush>
-          </property>
-          <property name="sceneRect">
-           <rectf>
-            <x>0.000000000000000</x>
-            <y>0.000000000000000</y>
-            <width>5.000000000000000</width>
-            <height>5.000000000000000</height>
-           </rectf>
-          </property>
-          <property name="optimizationFlags">
-           <set>QGraphicsView::DontSavePainterState</set>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="0">
          <widget class="QLabel" name="label_7">
           <property name="text">
@@ -195,7 +137,49 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QLineEdit" name="flash_color_2"/>
+         <widget class="QLineEdit" name="flash_color_2">
+          <property name="maximumSize">
+           <size>
+            <width>60</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="4">
+         <widget class="QPushButton" name="color_picker_2_btn">
+          <property name="text">
+           <string>Color Picker</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QWebView" name="flash_2_web">
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="url">
+           <url>
+            <string>about:blank</string>
+           </url>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QCheckBox" name="unlock_2_check">
+          <property name="maximumSize">
+           <size>
+            <width>80</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Unlock</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -204,11 +188,14 @@
         <rect>
          <x>10</x>
          <y>10</y>
-         <width>431</width>
-         <height>71</height>
+         <width>451</width>
+         <height>86</height>
         </rect>
        </property>
        <layout class="QFormLayout" name="formLayout_2">
+        <property name="fieldGrowthPolicy">
+         <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+        </property>
         <item row="0" column="0">
          <widget class="QLabel" name="label_4">
           <property name="text">
@@ -218,15 +205,34 @@
         </item>
         <item row="0" column="1">
          <widget class="QLineEdit" name="hue_ip_text">
+          <property name="maximumSize">
+           <size>
+            <width>150</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="text">
            <string>&lt; Get IP via the mobile app, or click to auto detect. &gt;</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
+        <item row="2" column="1">
          <widget class="QPushButton" name="bridge_detect_btn">
           <property name="text">
            <string>Detect Bridge IP</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="unlock_2_check_2">
+          <property name="maximumSize">
+           <size>
+            <width>80</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Unlock</string>
           </property>
          </widget>
         </item>
@@ -237,7 +243,7 @@
         <rect>
          <x>10</x>
          <y>90</y>
-         <width>431</width>
+         <width>451</width>
          <height>82</height>
         </rect>
        </property>
@@ -271,61 +277,18 @@
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="4">
-         <widget class="QPushButton" name="color_picker_1_btn">
-          <property name="text">
-           <string>Color Picker</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QGraphicsView" name="flash_color_1_graphic">
+        <item row="0" column="3">
+         <widget class="QWebView" name="flash_1_web">
           <property name="maximumSize">
            <size>
-            <width>25</width>
-            <height>25</height>
+            <width>40</width>
+            <height>40</height>
            </size>
           </property>
-          <property name="frameShape">
-           <enum>QFrame::Box</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Plain</enum>
-          </property>
-          <property name="lineWidth">
-           <number>1</number>
-          </property>
-          <property name="verticalScrollBarPolicy">
-           <enum>Qt::ScrollBarAsNeeded</enum>
-          </property>
-          <property name="backgroundBrush">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>255</red>
-             <green>0</green>
-             <blue>4</blue>
-            </color>
-           </brush>
-          </property>
-          <property name="foregroundBrush">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>255</red>
-             <green>0</green>
-             <blue>4</blue>
-            </color>
-           </brush>
-          </property>
-          <property name="sceneRect">
-           <rectf>
-            <x>0.000000000000000</x>
-            <y>0.000000000000000</y>
-            <width>5.000000000000000</width>
-            <height>5.000000000000000</height>
-           </rectf>
-          </property>
-          <property name="optimizationFlags">
-           <set>QGraphicsView::DontSavePainterState</set>
+          <property name="url">
+           <url>
+            <string>about:blank</string>
+           </url>
           </property>
          </widget>
         </item>
@@ -336,8 +299,35 @@
           </property>
          </widget>
         </item>
+        <item row="0" column="4">
+         <widget class="QPushButton" name="color_picker_1_btn">
+          <property name="text">
+           <string>Color Picker</string>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="1">
-         <widget class="QLineEdit" name="flash_color_1"/>
+         <widget class="QLineEdit" name="flash_color_1">
+          <property name="maximumSize">
+           <size>
+            <width>60</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QCheckBox" name="unlock_1_check">
+          <property name="maximumSize">
+           <size>
+            <width>80</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Unlock</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -436,6 +426,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QWebView</class>
+   <extends>QWidget</extends>
+   <header>QtWebKit/QWebView</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>
