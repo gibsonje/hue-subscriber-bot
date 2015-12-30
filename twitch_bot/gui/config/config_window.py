@@ -1,4 +1,5 @@
 from PyQt4 import QtGui, QtCore
+from PyQt4.QtWebKit import QWebView
 import os.path
 import yaml
 from gui import exceptions
@@ -16,6 +17,19 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     self.dialog_buttons.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(self.close)
     self.dialog_buttons.button(QtGui.QDialogButtonBox.Save).clicked.connect(self.save)
 
+    self.color_picker_1_btn.clicked.connect(lambda: self.color_window(self.flash_color_1, self.flash_1_web))
+    self.color_picker_2_btn.clicked.connect(lambda: self.color_window(self.flash_color_2, self.flash_2_web))
+
+  def color_window(self, color_picker, color_box):
+    start_hue = int(color_picker.text())
+    start_color = util.hue_qcolor(start_hue)
+    color_window = QtGui.QColorDialog(start_color)
+
+    color = color_window.getColor()
+
+    color_picker.setText(str(color.hue() * (int)(float(65535) / 359)))
+    self.paint_box(color_box, color.name())
+
   # Hack
   def field_map(self, field_map={}):
 
@@ -25,7 +39,7 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
         'oauth': self.oauth_text,
         'admin-user': self.username_text,
         'channel': self.channel_text,
-        'hue-bridge-group': self.hue_group_combo,
+        #'hue-bridge-group': self.hue_group_combo,
         'hue-bridge-ip': self.hue_ip_text,
         'hue-color-end': self.flash_color_2,
         'hue-color-start': self.flash_color_1,
@@ -70,26 +84,13 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
       else:
         raise Exception("WTF")
 
-    #Special Things
-    def paint_box(box, hue):
-      logger.info(str(hue))
-      hue = util.hue_65535_to_365(hue)
-      logger.info(str(hue))
+    self.paint_box(self.flash_1_web, util.hue_to_hex(float(config['hue-color-start']) / float(65535)))
+    self.paint_box(self.flash_2_web, util.hue_to_hex(float(config['hue-color-end']) / float(65535)))
 
-      color = QtGui.QColor.fromHsv(hue, 255, 255)
-      brush = QtGui.QBrush()
-      brush.setColor(color)
-      logger.info(brush)
-
-      scene = QtGui.QGraphicsScene()
-      scene.setBackgroundBrush(brush)
-      logger.info(scene)
-
-      box.setScene(scene)
-      box.render(QtGui.QPainter())
-
-    paint_box(self.flash_color_1_graphic, config['hue-color-start'])
-    paint_box(self.flash_color_2_graphic, config['hue-color-end'])
+  def paint_box(self, box, hex):
+    box.setHtml('<html><body style="background-color:{};"/></html>'.format(hex))
+    box.show()
+    logger.info('<html><body style="background-color:{};"/></html>'.format(hex))
 
   def save_and_close(self):
     self.save()
