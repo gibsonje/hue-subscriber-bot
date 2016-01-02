@@ -58,7 +58,7 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
       "hue_color_end": int(str(self.flash_color_2.text()).strip()),
       "hue_bridge_ip": str(self.hue_ip_text.text()).strip()
     }
-
+    logger.debug(config)
     return config
 
   def test_hue_connection(self):

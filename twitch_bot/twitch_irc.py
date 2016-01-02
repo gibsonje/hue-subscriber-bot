@@ -52,6 +52,7 @@ class TwitchIrc:
         self.logger.debug(group_info)
         name = str(group_info['name'])
         self.logger.debug("Connecting to backup group")
+        self.logger.debug(name)
         group = Group(b, name)
         group_id = group.group_id
       except (TypeError, LookupError) as e:
@@ -181,7 +182,7 @@ class TwitchIrc:
                 if 'subscribed' in message.strip().lower():
                   self.trigger_hue()
 
-              if sender.strip().lower() == self.config['admin_user'].lower():
+              if sender.strip().lower() == self.config['twitch_username'].lower():
                 if message.strip().lower() == "hue":
                   self.logger.info("Admin user triggered an event.")
                   self.trigger_hue()

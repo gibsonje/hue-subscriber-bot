@@ -87,17 +87,24 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
     def run(self):
       if os.path.isfile("config.yml"):
         with open("config.yml", 'r') as config_file:
-          config = yaml.load(config_file) or {}
-          snake_config = {k.replace('-','_'): v
-                          for k, v in config.iteritems()}
-          snake_config['twitch_host'] = snake_config['host']
-          snake_config['twitch_port'] = snake_config['port']
-          snake_config['twitch_oauth'] = snake_config['oauth']
-          snake_config['twitch_username'] = snake_config['username']
-          snake_config['twitch_channel'] = snake_config['channel']
-          snake_config['hue_transition_time']*=10
-          bot = TwitchIrc(snake_config)
+          raw_config = yaml.load(config_file) or {}
 
+          config = {
+            "twitch_host": "irc.twitch.tv",
+            "twitch_port": 6667,
+            "twitch_oauth": str(raw_config['oauth']).strip(),
+            "twitch_username": str(raw_config['username']).strip(),
+            "twitch_channel": str(raw_config['channel']).strip(),
+            "hue_transition_time": int(raw_config['hue-transition-time']) * 10,
+            "hue_flash_count": int(raw_config['hue-flash-count']),
+            "hue_color_start": int(raw_config['hue-color-start']),
+            "hue_color_end": int(raw_config['hue-color-end']),
+            "hue_bridge_ip":  str(raw_config['hue-bridge-ip']).strip()
+          }
+
+          bot = TwitchIrc(config)
+
+          logger.info("Config: %s", config)
           try:
             bot.run()
           except phue.PhueRegistrationException as e:
