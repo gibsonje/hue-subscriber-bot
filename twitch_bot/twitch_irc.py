@@ -51,7 +51,7 @@ class TwitchIrc:
       try:
         self.logger.debug(group_info)
         name = str(group_info['name'])
-        self.logger.debug("Connecting to group {}", name)
+        self.logger.debug("Connecting to backup group")
         group = Group(b, name)
         group_id = group.group_id
       except (TypeError, LookupError) as e:
