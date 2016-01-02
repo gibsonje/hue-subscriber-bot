@@ -78,8 +78,12 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
       QtGui.QMessageBox.critical(self, "Failed", "Bot crashed attempting flashes.")
 
   def color_window(self, color_picker, color_box):
-    start_hue = int(color_picker.text())
-    start_color = util.hue_qcolor(start_hue)
+    if str(color_picker.text()).strip():
+      start_hue = int(color_picker.text())
+      start_color = util.hue_qcolor(start_hue)
+    else:
+      start_color = QtGui.QColor()
+
     color_window = QtGui.QColorDialog(start_color)
 
     color = color_window.getColor()

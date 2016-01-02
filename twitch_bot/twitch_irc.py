@@ -187,7 +187,7 @@ class TwitchIrc:
                   self.logger.info("Admin user triggered an event.")
                   self.trigger_hue()
 
-              self.logger.debug(sender + ": " + message)
+              #self.logger.debug(sender + ": " + message)
       except UnicodeEncodeError:
         pass
 

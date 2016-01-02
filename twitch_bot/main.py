@@ -44,10 +44,14 @@ class MyReceiver(QtCore.QObject):
   def __init__(self,queue,*args,**kwargs):
     QtCore.QObject.__init__(self,*args,**kwargs)
     self.queue = queue
+    self.running = True
+
+  def stop_processing(self):
+    self.running = False
 
   @QtCore.pyqtSlot()
   def run(self):
-    while True:
+    while self.running:
       text = self.queue.get()
       self.mysignal.emit(text)
 
@@ -74,6 +78,16 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
     self.config_gui.hide()
 
     self.bot_thread = None
+    self.receiver_thread = None
+    self.receiver = None
+
+  def closeEvent(self, event):
+    logger.debug("Closing!")
+    if self.receiver:
+      self.receiver.stop_processing()
+    if self.receiver_thread:
+      self.receiver_thread.exit()
+    event.accept()
 
   def open_config(self):
     self.config_gui.load()
@@ -81,6 +95,7 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
 
   def update_list(self, line):
     self.text_list.addItem(line)
+    self.text_list.scrollToBottom()
 
   class BotThread(QtCore.QThread):
 
@@ -155,6 +170,8 @@ def main():
   thread.started.connect(my_receiver.run)
   thread.start()
 
+  form.receiver_thread = thread
+  form.receiver = my_receiver
   form.show()
 
   # Only tested for Windows currently
