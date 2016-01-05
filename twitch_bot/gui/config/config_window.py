@@ -3,7 +3,7 @@ from PyQt4.QtWebKit import QWebView
 import os.path
 import yaml
 from gui import exceptions
-from gui.dialog.config_2 import Ui_Dialog
+from gui.dialog.config import Ui_Dialog
 from util import util
 from log import get_logger
 import phue
@@ -17,9 +17,8 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     super(ConfigWindow, self).__init__(parent)
     self.setupUi(self)
 
-    self.dialog_buttons.button(QtGui.QDialogButtonBox.Ok).clicked.connect(self.save_and_close)
     self.dialog_buttons.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(self.close)
-    self.dialog_buttons.button(QtGui.QDialogButtonBox.Save).clicked.connect(self.save)
+    self.dialog_buttons.button(QtGui.QDialogButtonBox.Save).clicked.connect(self.save_and_close)
 
     self.color_picker_1_btn.clicked.connect(lambda: self.color_window(self.flash_color_1, self.flash_1_web))
     self.color_picker_2_btn.clicked.connect(lambda: self.color_window(self.flash_color_2, self.flash_2_web))
@@ -64,7 +63,10 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
   def test_hue_connection(self):
     config = self.get_current_config()
     try:
-      phue.Bridge(config['hue_bridge_ip'])
+      @util.run_async
+      def run():
+        phue.Bridge(config['hue_bridge_ip'])
+      run()
     except Exception as e:
        QtGui.QMessageBox.critical(self, "Failed to Connect", "Failed to connect to Hue Bridge {}".format(config['hue_bridge_ip']))
     else:
@@ -72,8 +74,13 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
 
   def test_flash(self):
     try:
-      bot = twitch_irc.TwitchIrc(self.get_current_config())
-      bot.trigger_hue()
+      @util.run_async
+      def run():
+        self.test_flash_button.setEnabled(False)
+        bot = twitch_irc.TwitchIrc(self.get_current_config())
+        bot.trigger_hue()
+        self.test_flash_button.setEnabled(True)
+      run()
     except:
       QtGui.QMessageBox.critical(self, "Failed", "Bot crashed attempting flashes.")
 

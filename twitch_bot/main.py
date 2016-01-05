@@ -81,14 +81,6 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
     self.receiver_thread = None
     self.receiver = None
 
-  def closeEvent(self, event):
-    logger.debug("Closing!")
-    if self.receiver:
-      self.receiver.stop_processing()
-    if self.receiver_thread:
-      self.receiver_thread.exit()
-    event.accept()
-
   def open_config(self):
     self.config_gui.load()
     self.config_gui.show()
@@ -153,6 +145,7 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
         config = yaml.load(config_file) or {}
         self.test_hue_connection(config)
         self.bot_thread = self.BotThread()
+        self.bot_thread.daemon = True
         self.bot_thread.start()
 
 def main():
