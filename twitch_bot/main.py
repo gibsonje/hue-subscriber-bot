@@ -80,6 +80,14 @@ class MainWindow(QtGui.QMainWindow, main_window.Ui_main_window):
     self.receiver_thread = None
     self.receiver = None
 
+  def closeEvent(self, event):
+    logger.debug("Closing!")
+    if self.receiver:
+      self.receiver.stop_processing()
+    if self.receiver_thread:
+      self.receiver_thread.exit()
+    event.accept()
+
   def open_config(self):
     self.config_gui.load()
     self.config_gui.show()
