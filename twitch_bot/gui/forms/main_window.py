@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file './hue-bot.ui'
+# Form implementation generated from reading ui file './main_window.ui'
 #
 # Created: Sun Dec 20 12:45:21 2015
 #      by: PyQt4 UI code generator 4.11.1
@@ -22,6 +22,7 @@ try:
 except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
+
 
 class Ui_main_window(object):
     def setupUi(self, main_window):

@@ -16,8 +16,8 @@ Options:
 
 """
 
-from log import get_logger
-from twitch_irc import TwitchIrc
+from twitch_bot.log import get_logger
+from twitch_bot.twitch_hue_bot import TwitchHueBot
 
 import docopt
 
@@ -42,7 +42,7 @@ def main():
       'hue_flash_count': int(arguments['--hue-flash-count'])
     }
 
-    bot = TwitchIrc(config)
+    bot = TwitchHueBot(config)
     bot.run()
 
   except docopt.DocoptExit as e:
