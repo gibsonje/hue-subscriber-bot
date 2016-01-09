@@ -102,7 +102,7 @@
              <string>#</string>
             </property>
             <property name="readOnly">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -193,7 +193,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="unlock_2_check_2">
+              <widget class="QCheckBox" name="hue_bridge_ip_unlock">
                <property name="maximumSize">
                 <size>
                  <width>80</width>
@@ -225,7 +225,7 @@
         </item>
         <item row="2" column="0" colspan="2">
          <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="3">
+          <item row="0" column="1">
            <widget class="QWebView" name="flash_1_web">
             <property name="maximumSize">
              <size>
@@ -247,36 +247,10 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="4">
+          <item row="0" column="2">
            <widget class="QPushButton" name="color_picker_1_btn">
             <property name="text">
              <string>Color Picker</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="flash_color_1">
-            <property name="maximumSize">
-             <size>
-              <width>60</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QCheckBox" name="unlock_1_check">
-            <property name="maximumSize">
-             <size>
-              <width>80</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Unlock</string>
             </property>
            </widget>
           </item>
@@ -284,19 +258,6 @@
         </item>
         <item row="3" column="0" colspan="2">
          <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="2">
-           <widget class="QCheckBox" name="unlock_2_check">
-            <property name="maximumSize">
-             <size>
-              <width>80</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Unlock</string>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label_7">
             <property name="text">
@@ -304,27 +265,14 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="flash_color_2">
-            <property name="maximumSize">
-             <size>
-              <width>60</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="4">
+          <item row="0" column="2">
            <widget class="QPushButton" name="color_picker_2_btn">
             <property name="text">
              <string>Color Picker</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="3">
+          <item row="0" column="1">
            <widget class="QWebView" name="flash_2_web">
             <property name="maximumSize">
              <size>
