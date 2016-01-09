@@ -20,6 +20,31 @@ class TwitchHueBot:
 
     return state
 
+  @staticmethod
+  def all_lights_group(bridge, logger):
+    group_name = 'color_lights'
+    try:
+      group = Group(bridge, group_name)
+      return group
+    except (TypeError, LookupError) as e:
+      logger.info("Creating a new group called '%s' with all color-enabled lights.", group_name)
+
+    colorable_lights = []
+    for light in bridge.lights:
+      try:
+        hue = light.hue
+        colorable_lights.append(light)
+      except KeyError as error:
+        # Lux light, doesn't support color.
+        logger.debug("Light %s doesn't support color.", light.light_id)
+        pass
+
+    colorable_ids = [ str(light.light_id) for light in colorable_lights ]
+    logger.debug("All Color Lights: %s", ', '.join(colorable_ids))
+    bridge.create_group(group_name, colorable_ids)
+
+    return Group(bridge, group_name)
+
   @classmethod
   def set_state(cls, bridge, state):
     for light, hue in state.iteritems():
@@ -40,19 +65,14 @@ class TwitchHueBot:
     self.logger.debug(msg)
 
     try:
+      # Try to load the configured group
       group = Group(b, self.config['hue_bridge_group'])
       group_id = group.group_id
     except (TypeError, LookupError) as e:
-      self.logger.error("*** Failed to get group. ***")
-      self.logger.error(e.message)
-      self.logger.error("Defaulting to first group found...")
-      group_info = api_result['groups'].itervalues().next()
+      # Group not found, use all color enabled lights.
+      self.logger.error("Couldn't load the configured group, using all color-enabled lights.")
       try:
-        self.logger.debug(group_info)
-        name = str(group_info['name'])
-        self.logger.debug("Connecting to backup group")
-        self.logger.debug(name)
-        group = Group(b, name)
+        group = TwitchHueBot.all_lights_group(b, self.logger)
         group_id = group.group_id
       except (TypeError, LookupError) as e:
         self.logger.error("Failed to connect to backup group.")
