@@ -1,25 +1,24 @@
-from PyQt4 import QtGui, QtCore
-import sys, os
-from cStringIO import StringIO
-import subprocess
-import yaml
 import logging
-from datetime import datetime
+import os
+import sys
+from multiprocessing import Queue
 
-import hue_bot
 import phue
-import hue_retry_box
-from twitch_irc import TwitchIrc
-from log import get_logger
-from version import package_version
-from gui.config import config_window
-
-from updater4pyi import upd_source, upd_core, upd_log, upd_downloader
+import yaml
+from PyQt4 import QtGui, QtCore
+from updater4pyi import upd_source, upd_core, upd_log
 from updater4pyi.upd_iface_pyqt4 import UpdatePyQt4Interface
 
-from multiprocessing import Process, Queue, Manager
+import twitch_bot.gui.forms.main_window as main_window
+import twitch_bot.gui.forms.hue_retry_box as hue_retry_box
+from twitch_bot.gui import config_window
+
+from twitch_hue_bot import TwitchHueBot
+from log import get_logger
+from version import package_version
+
 if sys.platform == 'win32':
-  import multiprocessing.reduction    # make sockets pickable/inheritable
+  pass
 
 logger = get_logger(__name__)
 
@@ -66,7 +65,7 @@ class HueRetryBox(QtGui.QDialog, hue_retry_box.Ui_Dialog):
   def retry(self):
     self.close()
 
-class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
+class MainWindow(QtGui.QMainWindow, main_window.Ui_main_window):
   def __init__(self, parent=None):
     super(MainWindow, self).__init__(parent)
     self.setupUi(self)
@@ -109,7 +108,7 @@ class MainWindow(QtGui.QMainWindow, hue_bot.Ui_main_window):
             "hue_bridge_ip":  str(raw_config['hue-bridge-ip']).strip()
           }
 
-          bot = TwitchIrc(config)
+          bot = TwitchHueBot(config)
 
           logger.info("Config: %s", config)
           try:

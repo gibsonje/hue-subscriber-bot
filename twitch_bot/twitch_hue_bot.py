@@ -1,12 +1,11 @@
-from log import get_logger
-
 import re
 import socket
 from phue import Bridge, Group
 from time import sleep
 
+from log import get_logger
 
-class TwitchIrc:
+class TwitchHueBot:
 
   def __init__(self, config):
     self.config = config

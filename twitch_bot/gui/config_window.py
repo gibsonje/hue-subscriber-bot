@@ -1,16 +1,18 @@
-from PyQt4 import QtGui, QtCore
-from PyQt4.QtWebKit import QWebView
 import os.path
-import yaml
-from gui import exceptions
-from gui.dialog.config import Ui_Dialog
-from util import util
-from log import get_logger
-import phue
 import webbrowser
-import twitch_irc
+
+import phue
+import yaml
+from PyQt4 import QtGui
+
+import twitch_bot.twitch_hue_bot as twitch_irc
+import twitch_bot.util as util
+from twitch_bot.gui import exceptions
+from twitch_bot.gui.forms.config import Ui_Dialog
+from twitch_bot.log import get_logger
 
 logger = get_logger(__name__)
+
 
 class ConfigWindow(QtGui.QDialog, Ui_Dialog):
   def __init__(self, parent=None):
@@ -41,7 +43,6 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     if  channel_txt == "#{}".format(username_txt.lower()[:-1]) or \
         channel_txt[:-1] == "#{}".format(username_txt.lower()):
       self.channel_text.setText("#{}".format(username_txt.lower()))
-
 
   def get_current_config(self):
     config = {
@@ -77,7 +78,7 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
       @util.run_async
       def run():
         self.test_flash_button.setEnabled(False)
-        bot = twitch_irc.TwitchIrc(self.get_current_config())
+        bot = twitch_irc.TwitchHueBot(self.get_current_config())
         bot.trigger_hue()
         self.test_flash_button.setEnabled(True)
       run()
@@ -132,7 +133,6 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     except IOError:
       raise exceptions.ConfigLoadFailed("Failed to load yaml config file.")
 
-
   def load(self):
     try:
       config = self.load_config()
@@ -155,7 +155,8 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     self.paint_box(self.flash_1_web, util.hue_to_hex(float(config['hue-color-start']) / float(65535)))
     self.paint_box(self.flash_2_web, util.hue_to_hex(float(config['hue-color-end']) / float(65535)))
 
-  def paint_box(self, box, hex):
+  @staticmethod
+  def paint_box(box, hex):
     box.setHtml('<html><body style="background-color:{};"/></html>'.format(hex))
     box.show()
 
