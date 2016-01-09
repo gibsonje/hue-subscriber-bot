@@ -29,10 +29,13 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     self.test_connection_btn.clicked.connect(self.test_hue_connection)
     self.oauth_btn.clicked.connect(lambda: webbrowser.open("https://twitchapps.com/tmi/"))
 
+    self.hue_ip_text.textChanged.connect(lambda: self.test_flash_button.setEnabled(False))
+
     self.username_text.textEdited.connect(self.username_edited)
 
     for x in (self.test_connection_btn_2, self.unlock_channel, self.unlock_1_check,
-              self.unlock_2_check, self.unlock_2_check_2, self.bridge_detect_btn):
+              self.unlock_2_check, self.unlock_2_check_2, self.bridge_detect_btn,
+              self.test_flash_button):
       x.setDisabled(True)
 
   def username_edited(self):
@@ -64,13 +67,16 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
   def test_hue_connection(self):
     config = self.get_current_config()
     try:
-      @util.run_async
+      @util.run_sync
       def run():
         phue.Bridge(config['hue_bridge_ip'])
       run()
     except Exception as e:
-       QtGui.QMessageBox.critical(self, "Failed to Connect", "Failed to connect to Hue Bridge {}".format(config['hue_bridge_ip']))
+      self.test_flash_button.setEnabled(False)
+      logger.info(e.message)
+      QtGui.QMessageBox.critical(self, "Failed to Connect", "Failed to connect to Hue Bridge {}".format(config['hue_bridge_ip']))
     else:
+      self.test_flash_button.setEnabled(True)
       QtGui.QMessageBox.information(self, "Success", "Successfully connected!")
 
   def test_flash(self):
