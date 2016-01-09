@@ -33,8 +33,7 @@ class TwitchHueBot:
     for light in bridge.lights:
       try:
         hue = light.hue
-        if hue:
-          colorable_lights.append(light)
+        colorable_lights.append(light)
       except KeyError as error:
         # Lux light, doesn't support color.
         logger.debug("Light %s doesn't support color.", light.light_id)
