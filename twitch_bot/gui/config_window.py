@@ -151,10 +151,6 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
         field_gui.setText(str(config[field]))
       elif isinstance(field_gui, (QtGui.QSlider, QtGui.QSpinBox)):
         field_gui.setValue(int(config[field]))
-      elif isinstance(field_gui, (QtGui.QComboBox)):
-        test = QtGui.QComboBox()
-        test.setItemText(0, config[field])
-        test.setCurrentIndex(0)
       else:
         raise Exception("WTF")
 
