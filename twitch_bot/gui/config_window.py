@@ -33,6 +33,8 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
 
     self.username_text.textEdited.connect(self.username_edited)
 
+    self.flash_speed_slider.setInvertedAppearance(True)
+
     for x in (self.test_connection_btn_2, self.unlock_channel, self.unlock_1_check,
               self.unlock_2_check, self.unlock_2_check_2, self.bridge_detect_btn,
               self.test_flash_button):
