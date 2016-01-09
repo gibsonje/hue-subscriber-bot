@@ -1,6 +1,8 @@
 from PyQt4 import QtGui
 from colorsys import hsv_to_rgb, rgb_to_hsv
 import re
+from Queue import Queue, Empty
+import sys
 
 
 def hue_65535_to_365(val_65535):
@@ -83,3 +85,72 @@ def run_async(func):
     return func_hl
 
   return async_func
+
+
+
+def run_sync(func):
+  """
+  run_async(func)
+  function decorator, intended to make "func" run in a separate
+  thread (asynchronously).
+  Returns the created Thread object
+
+  E.g.:
+  @run_async
+  def task1():
+      do_something
+
+  @run_async
+  def task2():
+      do_something_too
+
+  t1 = task1()
+  t2 = task2()
+  ...
+  t1.join()t2.join()
+  """
+  from threading import Thread
+  from functools import wraps
+  from multiprocessing import Process
+
+  class ExcThread(Thread):
+    def __init__(self, bucket, func, func_args, func_kwargs, *args, **kwargs):
+      super(ExcThread, self).__init__(*args, **kwargs)
+      self.bucket = bucket
+      self.to_run = (func, func_args, func_kwargs)
+
+    def run(self):
+      try:
+        self.to_run[0](*self.to_run[1], **self.to_run[2])
+      except Exception:
+        exctype, value = sys.exc_info()[:2]
+        self.bucket.put((exctype, value))
+
+  @wraps(func)
+  def sync_func(*args, **kwargs):
+    bucket = Queue()
+    func_hl = ExcThread(bucket, func, args, kwargs)
+    func_hl.start()
+    while True:
+      try:
+        exc_type, exc_value = bucket.get(block=False)
+        # deal with the exception
+        raise exc_type(exc_value)
+      except Empty:
+        pass
+
+      func_hl.join(0.1)
+      if func_hl.isAlive():
+        continue
+      else:
+        try:
+          exc_type, exc_value = bucket.get(block=False)
+          # deal with the exception
+          raise exc_type(exc_value)
+        except Empty:
+          pass
+        break
+
+    return func_hl
+
+  return sync_func
