@@ -22,8 +22,8 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     self.dialog_buttons.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(self.close)
     self.dialog_buttons.button(QtGui.QDialogButtonBox.Save).clicked.connect(self.save_and_close)
 
-    self.color_picker_1_btn.clicked.connect(lambda: self.color_window(self.flash_color_1, self.flash_1_web))
-    self.color_picker_2_btn.clicked.connect(lambda: self.color_window(self.flash_color_2, self.flash_2_web))
+    self.color_picker_1_btn.clicked.connect(lambda: self.color_window('hue-color-start', self.flash_1_web))
+    self.color_picker_2_btn.clicked.connect(lambda: self.color_window('hue-color-end', self.flash_2_web))
 
     self.test_flash_button.clicked.connect(self.test_flash)
     self.test_connection_btn.clicked.connect(self.test_hue_connection)
@@ -35,8 +35,7 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
 
     self.flash_speed_slider.setInvertedAppearance(True)
 
-    for x in (self.test_connection_btn_2, self.unlock_channel, self.unlock_1_check,
-              self.unlock_2_check, self.unlock_2_check_2, self.bridge_detect_btn,
+    for x in (self.test_connection_btn_2, self.unlock_channel, self.bridge_detect_btn,
               self.test_flash_button):
       x.setDisabled(True)
 
@@ -93,12 +92,14 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     except:
       QtGui.QMessageBox.critical(self, "Failed", "Bot crashed attempting flashes.")
 
-  def color_window(self, color_picker, color_box):
+  def color_window(self, config_field, color_box):
+    cfg = self.load_config()
     if str(color_picker.text()).strip():
-      start_hue = int(color_picker.text())
+      start_hue = cfg[config_field]
       start_color = util.hue_qcolor(start_hue)
     else:
       start_color = QtGui.QColor()
+      start_color.setGreen(255)
 
     color_window = QtGui.QColorDialog(start_color)
 
@@ -118,8 +119,6 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
         'channel': self.channel_text,
         #'hue-bridge-group': self.hue_group_combo,
         'hue-bridge-ip': self.hue_ip_text,
-        'hue-color-end': self.flash_color_2,
-        'hue-color-start': self.flash_color_1,
         'hue-flash-count': self.hue_flash_count_spin_box,
         'hue-transition-time': self.flash_speed_slider
       }
