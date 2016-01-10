@@ -15,8 +15,19 @@ class SchemaMapper:
     def bind(self, schema_uri, set_data, get_data):
         self.bindings[schema_uri] = (set_data, get_data)
 
+    def nested_set(self, dic, keys, value):
+        for key in keys[:-1]:
+            dic = dic.setdefault(key, {})
+        dic[keys[-1]] = value
+
     def get_bound(self):
-        return {k: v[1]() for k, v in self.bindings.iteritems()}
+        nested_dict = {k: v[1]() for k, v in self.bindings.iteritems()}
+        formatted_dict = {}
+
+        for k, v in nested_dict.iteritems():
+            self.nested_set(formatted_dict, k.split(":"), v)
+
+        return formatted_dict
 
     def set_bound(self, config):
         """
@@ -50,9 +61,6 @@ if __name__ == "__main__":
 
     class Test(Schema):
         nest = Test2
-
-
-
 
     data = {'nest': {
         'test': "Hi!"

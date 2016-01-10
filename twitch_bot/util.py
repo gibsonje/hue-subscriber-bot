@@ -29,7 +29,6 @@ def hue_to_rgb(hue):
   :param hue: Phillip's Hue (h<65535>,s<255>,v<255>)
   :return: tuple: r<255>,g<255>,b<255>
   """
-  print hue
   hsv_to_rgb_res = hsv_to_rgb(float(hue[0]) / 65535.0,
                               float(hue[1]) / 255.0,
                               float(hue[2]) / 255.0)

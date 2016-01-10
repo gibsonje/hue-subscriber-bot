@@ -57,8 +57,8 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
                        lambda x: hue_color_set(self.flash_2_web, x),
                        lambda: util.hex_to_65535_hue(str(self.flash_2_web.toolTip())))
 
-    schema_mapper.bind("hue:transition_time", self.flash_speed_slider.setValue, self.flash_speed_slider.value())
-    schema_mapper.bind("hue:flash_count", self.hue_flash_count_spin_box.setValue, self.hue_flash_count_spin_box.value())
+    schema_mapper.bind("hue:transition_time", self.flash_speed_slider.setValue, self.flash_speed_slider.value)
+    schema_mapper.bind("hue:flash_count", self.hue_flash_count_spin_box.setValue, self.hue_flash_count_spin_box.value)
 
     self.schema_mapper = schema_mapper
 
@@ -77,24 +77,7 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
       self.channel_text.setText("#{}".format(username_txt.lower()))
 
   def get_current_config(self):
-    hex_1 = str(self.flash_1_web.toolTip())
-    hex_2 = str(self.flash_2_web.toolTip())
-    config = {
-      'twitch': {
-        "oauth": str(self.oauth_text.text()).strip(),
-        "username": str(self.username_text.text()).strip(),
-        "channel": str(self.channel_text.text()).strip(),
-      },
-      'hue': {
-        "bridge_ip": str(self.hue_ip_text.text()).strip(),
-        "color_start": util.hex_to_65535_hue(hex_1),
-        "color_end": util.hex_to_65535_hue(hex_2),
-        "transition_time": int(self.flash_speed_slider.value()) * 10,
-        "flash_count": int(self.hue_flash_count_spin_box.value())
-      }
-    }
-    logger.debug(config)
-    return config
+    return self.schema_mapper.get_bound()
 
   def test_hue_connection(self):
     config = self.get_current_config()
@@ -173,23 +156,17 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     self.close()
 
   def save(self):
-    config = {}
-    field_map = self.field_map()
-    for section_name, section in field_map.iteritems():
-      for config_name, field_gui in section.iteritems():
-        if isinstance(field_gui, QtGui.QLineEdit):
-          config[section_name][config_name] = str(field_gui.text()).strip()
-        elif isinstance(field_gui, (QtGui.QSlider, QtGui.QSpinBox)):
-          config[section_name][config_name] = int(field_gui.value())
+    config = self.get_current_config()
 
-    with open('config.yml', 'w+') as config_file:
-      noalias_dumper = yaml.dumper.SafeDumper
-      noalias_dumper.ignore_aliases = lambda self, data: True
 
-      file_contents = yaml.dump(config,
-                                default_flow_style=False,
-                                Dumper=noalias_dumper)
-      config_file.write(file_contents)
+   #with open('config.yml', 'w+') as config_file:
+   #  noalias_dumper = yaml.dumper.SafeDumper
+   #  noalias_dumper.ignore_aliases = lambda self, data: True
+
+   #  file_contents = yaml.dump(config,
+   #                            default_flow_style=False,
+   #                            Dumper=noalias_dumper)
+   #  config_file.write(file_contents)
 
   def close(self):
     self.hide()
