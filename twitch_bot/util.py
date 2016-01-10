@@ -24,12 +24,21 @@ def hue_qcolor(hue_color):
 
 
 def hue_to_rgb(hue):
-  hsv_to_rgb_res = hsv_to_rgb(hue, 1.0, 1.0)
+  """
+  :type hue: tuple
+  :param hue: Phillip's Hue (h<65535>,s<255>,v<255>)
+  :return: tuple: r<255>,g<255>,b<255>
+  """
+  print hue
+  hsv_to_rgb_res = hsv_to_rgb(float(hue[0]) / 65535.0,
+                              float(hue[1]) / 255.0,
+                              float(hue[2]) / 255.0)
 
   return map(lambda x: int(x * 255), hsv_to_rgb_res)
 
-
 def hue_to_hex(hue):
+  rgb = hue_to_rgb(hue)
+
   return rgb_to_hex(hue_to_rgb(hue))
 
 def hex_to_65535_hue(hex):
@@ -40,6 +49,7 @@ def hex_to_65535_hue(hex):
   val = qcolor.value()
 
   return (hue_65535, sat, val)
+
 def rgb_to_hex(rgb):
   converted = map(lambda x: str(hex(x))[2:].zfill(2), rgb)
 
@@ -56,13 +66,14 @@ def hex_to_rgb(hex):
 
 
 def rgb_to_255_hsv(rgb):
-  ratio_rgb = (float(x) / 255.0 for x in rgb)
+  ratio_rgb = [float(x) / 255.0 for x in rgb]
 
   return rgb_to_hsv(*ratio_rgb)
 
 
-def hex_to_qcolor(hex):
-  rgb = hex_to_rgb(hex)
+def hex_to_qcolor(hex_str):
+  rgb = hex_to_rgb(hex_str)
+
   hsv = rgb_to_255_hsv(rgb)
   qcolor = QtGui.QColor.fromHsv(hsv[0], hsv[1], hsv[2])
 

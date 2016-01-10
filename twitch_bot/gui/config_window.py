@@ -11,6 +11,7 @@ from twitch_bot.config_schema import AppConfig
 from twitch_bot.gui import exceptions
 from twitch_bot.gui.forms.config import Ui_Dialog
 from twitch_bot.log import get_logger
+from twitch_bot.gui.schema_mapper import SchemaMapper
 
 logger = get_logger(__name__)
 
@@ -36,6 +37,32 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
 
     self.flash_speed_slider.setInvertedAppearance(True)
 
+    # Gui Bindings:
+    logger.info("Creating GUI bindings")
+    schema_mapper = SchemaMapper(AppConfig)
+    schema_mapper.bind("twitch:oauth", self.oauth_text.setText, lambda: str(self.oauth_text.text()))
+    schema_mapper.bind("twitch:username", self.username_text.setText, lambda: str(self.username_text.text()).strip())
+    schema_mapper.bind("twitch:channel", self.channel_text.setText, lambda: str(self.channel_text.text()).strip())
+
+    schema_mapper.bind("hue:bridge_ip", self.hue_ip_text.setText, lambda: str(self.hue_ip_text.text()).strip())
+    def hue_color_set(box, hue_dict):
+      hex = util.hue_to_hex(hue_dict.values())
+      self.paint_box(box, hex)
+
+    #TODO: Real get
+    schema_mapper.bind("hue:color_start",
+                       lambda x: hue_color_set(self.flash_1_web, x),
+                       lambda: util.hex_to_65535_hue(str(self.flash_1_web.toolTip())))
+    schema_mapper.bind("hue:color_end",
+                       lambda x: hue_color_set(self.flash_2_web, x),
+                       lambda: util.hex_to_65535_hue(str(self.flash_2_web.toolTip())))
+
+    schema_mapper.bind("hue:transition_time", self.flash_speed_slider.setValue, self.flash_speed_slider.value())
+    schema_mapper.bind("hue:flash_count", self.hue_flash_count_spin_box.setValue, self.hue_flash_count_spin_box.value())
+
+    self.schema_mapper = schema_mapper
+
+
     for x in (self.test_connection_btn_2, self.unlock_channel, self.bridge_detect_btn,
               self.test_flash_button):
       x.setDisabled(True)
@@ -50,6 +77,8 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
       self.channel_text.setText("#{}".format(username_txt.lower()))
 
   def get_current_config(self):
+    hex_1 = str(self.flash_1_web.toolTip())
+    hex_2 = str(self.flash_2_web.toolTip())
     config = {
       'twitch': {
         "oauth": str(self.oauth_text.text()).strip(),
@@ -58,8 +87,8 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
       },
       'hue': {
         "bridge_ip": str(self.hue_ip_text.text()).strip(),
-        "color_start": util.hex_to_65535_hue(str(self.flash_1_web.toolTip())),
-        "color_end": util.hex_to_65535_hue(str(self.flash_1_web.toolTip())),
+        "color_start": util.hex_to_65535_hue(hex_1),
+        "color_end": util.hex_to_65535_hue(hex_2),
         "transition_time": int(self.flash_speed_slider.value()) * 10,
         "flash_count": int(self.hue_flash_count_spin_box.value())
       }
@@ -109,26 +138,6 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
 
     self.paint_box(color_box, color.name())
 
-  # Hack
-  def field_map(self, field_map={}):
-
-    if not field_map:
-      field_map = {
-        'twitch': {
-          'username': self.username_text,
-          'oauth': self.oauth_text,
-          'channel': self.channel_text,
-        },
-        'hue': {
-          'bridge_ip': self.hue_ip_text,
-          "color_start": util.hex_to_65535_hue(str(self.flash_1_web.toolTip())),
-          "color_end": util.hex_to_65535_hue(str(self.flash_1_web.toolTip())),
-          'flash_count': self.hue_flash_count_spin_box,
-          'transition_time': self.flash_speed_slider
-        }
-      }
-
-    return field_map
 
   def load_config(self):
     """
@@ -146,25 +155,12 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     return AppConfig.from_python(config)
 
   def load(self):
-    try:
-      logger.info("Config Loaded")
-      config = self.load_config()
+    config = self.load_config()
+    logger.info("Config Loaded")
 
-    except exceptions.ConfigLoadFailed:
-      config = {}
 
-    field_map = self.field_map()
-    for section_name, section in field_map.iteritems():
-      for config_name, field_gui in section.iteritems():
-        if isinstance(field_gui, QtGui.QLineEdit):
-          field_gui.setText(str(config[section_name][config_name]))
-        elif isinstance(field_gui, (QtGui.QSlider, QtGui.QSpinBox)):
-          field_gui.setValue(int(config[section_name][config_name]))
-        else:
-          raise Exception("WTF")
+    self.schema_mapper.set_bound(config)
 
-    self.paint_box(self.flash_1_web, util.hue_to_hex(float(config['hue']['color_start']) / float(65535)))
-    self.paint_box(self.flash_2_web, util.hue_to_hex(float(config['hue']['color_end']) / float(65535)))
 
   @staticmethod
   def paint_box(box, hex):
