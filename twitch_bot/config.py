@@ -21,6 +21,8 @@ class HueConfig(Schema):
   bridge_ip = validators.IPAddress(if_missing="")
   color_start = PhillipsHueColor(65535, if_missing={'hue': 65535, 'saturatin': 255, 'value': 255})
   color_end = PhillipsHueColor(46920, if_missing={'hue': 46920, 'saturatin': 255, 'value': 255})
+  transition_time = validators.Int(if_missing=1)
+  flash_count = validators.Int(if_missing=3)
   oauth = validators.String() # TODO: Validate oauth token
   username = validators.String()
   channel = validators.String() # TODO: Validate starts with #
