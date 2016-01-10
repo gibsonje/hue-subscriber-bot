@@ -14,7 +14,7 @@ import twitch_bot.gui.forms.main_window as main_window
 import twitch_bot.gui.forms.hue_retry_box as hue_retry_box
 from twitch_bot.gui import config_window
 
-from config import AppConfig
+from config_schema import AppConfig
 from twitch_hue_bot import TwitchHueBot
 from log import get_logger
 from version import package_version

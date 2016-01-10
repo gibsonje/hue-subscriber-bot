@@ -7,7 +7,7 @@ from PyQt4 import QtGui, QtCore
 
 import twitch_bot.twitch_hue_bot as twitch_irc
 import twitch_bot.util as util
-from twitch_bot.config import AppConfig
+from twitch_bot.config_schema import AppConfig
 from twitch_bot.gui import exceptions
 from twitch_bot.gui.forms.config import Ui_Dialog
 from twitch_bot.log import get_logger
@@ -23,8 +23,8 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     self.dialog_buttons.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(self.close)
     self.dialog_buttons.button(QtGui.QDialogButtonBox.Save).clicked.connect(self.save_and_close)
 
-    self.color_picker_1_btn.clicked.connect(lambda: self.color_window('hue-color-start', self.flash_1_web))
-    self.color_picker_2_btn.clicked.connect(lambda: self.color_window('hue-color-end', self.flash_2_web))
+    self.color_picker_1_btn.clicked.connect(lambda: self.color_window('color_start', self.flash_1_web))
+    self.color_picker_2_btn.clicked.connect(lambda: self.color_window('color_end', self.flash_2_web))
 
     self.test_flash_button.clicked.connect(self.test_flash)
     self.test_connection_btn.clicked.connect(self.test_hue_connection)
@@ -97,7 +97,7 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
   def color_window(self, config_field, color_box):
     cfg = self.get_current_config()
     if str(color_picker.text()).strip():
-      start_hue = cfg[config_field]
+      start_hue = cfg['hue'][config_field]['hue']
       start_color = util.hue_qcolor(start_hue)
     else:
       start_color = QtGui.QColor()
@@ -110,20 +110,22 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     self.paint_box(color_box, color.name())
 
   # Hack
-  def field_map(self, field_map={}, config={}):
+  def field_map(self, field_map={}):
 
     if not field_map:
       field_map = {
-        config['twitch']['username']: self.username_text,
-        config['twitch']['oauth']: self.oauth_text,
-        config['twitch']['username']: self.username_text, # TODO: Support list of admins
-        config['twitch']['channel']: self.channel_text,
-        #'hue-bridge-group': self.hue_group_combo,
-        config['hue']['bridge_ip']: self.hue_ip_text,
-        config['hue']['color_start']: self.flash_color_1,
-        config['hue']['color_end']: self.flash_color_2,
-        config['hue']['flash_count']: self.hue_flash_count_spin_box,
-        config['hue']['transition_time']: self.flash_speed_slider
+        'twitch': {
+          'username': self.username_text,
+          'oauth': self.oauth_text,
+          'channel': self.channel_text,
+        },
+        'hue': {
+          'bridge_ip': self.hue_ip_text,
+          "color_start": util.hex_to_65535_hue(str(self.flash_1_web.toolTip())),
+          "color_end": util.hex_to_65535_hue(str(self.flash_1_web.toolTip())),
+          'flash_count': self.hue_flash_count_spin_box,
+          'transition_time': self.flash_speed_slider
+        }
       }
 
     return field_map
@@ -151,13 +153,15 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     except exceptions.ConfigLoadFailed:
       config = {}
 
-    for value, field_gui in self.field_map(config=config).iteritems():
-      if isinstance(field_gui, QtGui.QLineEdit):
-        field_gui.setText(str(value))
-      elif isinstance(field_gui, (QtGui.QSlider, QtGui.QSpinBox)):
-        field_gui.setValue(int(value))
-      else:
-        raise Exception("WTF")
+    field_map = self.field_map()
+    for section_name, section in field_map.iteritems():
+      for config_name, field_gui in section.iteritems():
+        if isinstance(field_gui, QtGui.QLineEdit):
+          field_gui.setText(str(config[section_name][config_name]))
+        elif isinstance(field_gui, (QtGui.QSlider, QtGui.QSpinBox)):
+          field_gui.setValue(int(config[section_name][config_name]))
+        else:
+          raise Exception("WTF")
 
     self.paint_box(self.flash_1_web, util.hue_to_hex(float(config['hue']['color_start']) / float(65535)))
     self.paint_box(self.flash_2_web, util.hue_to_hex(float(config['hue']['color_end']) / float(65535)))
@@ -174,11 +178,13 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
 
   def save(self):
     config = {}
-    for field, field_gui in self.field_map().iteritems():
-      if isinstance(field_gui, QtGui.QLineEdit):
-        config[field] = str(field_gui.text()).strip()
-      elif isinstance(field_gui, (QtGui.QSlider, QtGui.QSpinBox)):
-        config[field] = int(field_gui.value())
+    field_map = self.field_map()
+    for section_name, section in field_map.iteritems():
+      for config_name, field_gui in section.iteritems():
+        if isinstance(field_gui, QtGui.QLineEdit):
+          config[section_name][config_name] = str(field_gui.text()).strip()
+        elif isinstance(field_gui, (QtGui.QSlider, QtGui.QSpinBox)):
+          config[section_name][config_name] = int(field_gui.value())
 
     with open('config.yml', 'w+') as config_file:
       noalias_dumper = yaml.dumper.SafeDumper
