@@ -9,10 +9,12 @@ from PyQt4 import QtGui, QtCore
 from updater4pyi import upd_source, upd_core, upd_log
 from updater4pyi.upd_iface_pyqt4 import UpdatePyQt4Interface
 
+# UI
 import twitch_bot.gui.forms.main_window as main_window
 import twitch_bot.gui.forms.hue_retry_box as hue_retry_box
 from twitch_bot.gui import config_window
 
+from config import AppConfig
 from twitch_hue_bot import TwitchHueBot
 from log import get_logger
 from version import package_version
@@ -100,32 +102,19 @@ class MainWindow(QtGui.QMainWindow, main_window.Ui_main_window):
 
     def run(self):
       if os.path.isfile("config.yml"):
-        with open("config.yml", 'r') as config_file:
-          raw_config = yaml.load(config_file) or {}
+        raw_config = yaml.load(open("config.yml", 'r')) or {}
+        config = AppConfig.to_python(raw_config)
 
-          config = {
-            "twitch_host": "irc.twitch.tv",
-            "twitch_port": 6667,
-            "twitch_oauth": str(raw_config['oauth']).strip(),
-            "twitch_username": str(raw_config['username']).strip(),
-            "twitch_channel": str(raw_config['channel']).strip(),
-            "hue_transition_time": int(raw_config['hue-transition-time']) * 10,
-            "hue_flash_count": int(raw_config['hue-flash-count']),
-            "hue_color_start": int(raw_config['hue-color-start']),
-            "hue_color_end": int(raw_config['hue-color-end']),
-            "hue_bridge_ip":  str(raw_config['hue-bridge-ip']).strip()
-          }
+        bot = TwitchHueBot(config)
 
-          bot = TwitchHueBot(config)
-
-          logger.info("Config: %s", config)
-          try:
-            bot.run()
-          except phue.PhueRegistrationException as e:
-            logger.error("Failed to register with the Hue Bridge. Push the button on the bridge.")
-          except Exception as e:
-            logger.error("Failed to start bot.")
-            raise e
+        logger.info("Config: %s", AppConfig.from_python(config))
+        try:
+          bot.run()
+        except phue.PhueRegistrationException as e:
+          logger.error("Failed to register with the Hue Bridge. Push the button on the bridge.")
+        except Exception as e:
+          logger.error("Failed to start bot.")
+          raise e
 
   def test_hue_connection(self, config):
     def cancel():
@@ -135,7 +124,7 @@ class MainWindow(QtGui.QMainWindow, main_window.Ui_main_window):
       self.test_hue_connection(config)
 
     try:
-      phue.Bridge(config['hue-bridge-ip'])
+      phue.Bridge(config['hue']['bridge-ip'])
     except Exception as e:
       logger.error(e.message)
       dialog = HueRetryBox()
@@ -148,12 +137,12 @@ class MainWindow(QtGui.QMainWindow, main_window.Ui_main_window):
     self.start_button.setEnabled(False)
 
     if os.path.isfile("config.yml"):
-      with open("config.yml", 'r') as config_file:
-        config = yaml.load(config_file) or {}
-        self.test_hue_connection(config)
-        self.bot_thread = self.BotThread()
-        self.bot_thread.daemon = True
-        self.bot_thread.start()
+      raw_config = yaml.load(open("config.yml", 'r')) or {}
+      config = AppConfig.to_python(raw_config)
+      self.test_hue_connection(AppConfig.from_python(config))
+      self.bot_thread = self.BotThread()
+      self.bot_thread.daemon = True
+      self.bot_thread.start()
 
 def main():
   app = QtGui.QApplication(sys.argv)
@@ -200,9 +189,9 @@ class UpdateThread(QtCore.QThread):
 
   def load_config (self):
     if os.path.isfile("config.yml"):
-      with open("config.yml", 'r') as config_file:
-        config = yaml.load(config_file) or {}
-        return config
+      raw_config = yaml.load(open("config.yml", 'r')) or {}
+      self.logger.info('raw_config')
+      return AppConfig.to_python(raw_config)
     return {}
 
   def run(self):

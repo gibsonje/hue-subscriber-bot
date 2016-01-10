@@ -3,10 +3,11 @@ import webbrowser
 
 import phue
 import yaml
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore
 
 import twitch_bot.twitch_hue_bot as twitch_irc
 import twitch_bot.util as util
+from twitch_bot.config import AppConfig
 from twitch_bot.gui import exceptions
 from twitch_bot.gui.forms.config import Ui_Dialog
 from twitch_bot.log import get_logger
@@ -45,22 +46,23 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
 
     # Hax
     if  channel_txt == "#{}".format(username_txt.lower()[:-1]) or \
-        channel_txt[:-1] == "#{}".format(username_txt.lower()):
+            channel_txt[:-1] == "#{}".format(username_txt.lower()):
       self.channel_text.setText("#{}".format(username_txt.lower()))
 
   def get_current_config(self):
     config = {
-
-      "twitch_host": "irc.twitch.tv",
-      "twitch_port": "6667",
-      "twitch_oauth": str(self.oauth_text.text()).strip(),
-      "twitch_username": str(self.username_text.text()).strip(),
-      "twitch_channel": str(self.channel_text.text()).strip(),
-      "hue_transition_time": int(self.flash_speed_slider.value()) * 10,
-      "hue_flash_count": int(self.hue_flash_count_spin_box.value()),
-      "hue_color_start": int(str(self.flash_color_1.text()).strip()),
-      "hue_color_end": int(str(self.flash_color_2.text()).strip()),
-      "hue_bridge_ip": str(self.hue_ip_text.text()).strip()
+      'twitch': {
+        "oauth": str(self.oauth_text.text()).strip(),
+        "username": str(self.username_text.text()).strip(),
+        "channel": str(self.channel_text.text()).strip(),
+      },
+      'hue': {
+        "bridge_ip": str(self.hue_ip_text.text()).strip(),
+        "color_start": util.hex_to_65535_hue(str(self.flash_1_web.toolTip())),
+        "color_end": util.hex_to_65535_hue(str(self.flash_1_web.toolTip())),
+        "transition_time": int(self.flash_speed_slider.value()) * 10,
+        "flash_count": int(self.hue_flash_count_spin_box.value())
+      }
     }
     logger.debug(config)
     return config
@@ -70,7 +72,7 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     try:
       @util.run_sync
       def run():
-        phue.Bridge(config['hue_bridge_ip'])
+        phue.Bridge(config['hue']['bridge_ip'])
       run()
     except Exception as e:
       self.test_flash_button.setEnabled(False)
@@ -93,7 +95,7 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
       QtGui.QMessageBox.critical(self, "Failed", "Bot crashed attempting flashes.")
 
   def color_window(self, config_field, color_box):
-    cfg = self.load_config()
+    cfg = self.get_current_config()
     if str(color_picker.text()).strip():
       start_hue = cfg[config_field]
       start_color = util.hue_qcolor(start_hue)
@@ -105,22 +107,23 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
 
     color = color_window.getColor()
 
-    color_picker.setText(str(color.hue() * (int)(float(65535) / 359)))
     self.paint_box(color_box, color.name())
 
   # Hack
-  def field_map(self, field_map={}):
+  def field_map(self, field_map={}, config={}):
 
     if not field_map:
       field_map = {
-        'username': self.username_text,
-        'oauth': self.oauth_text,
-        'admin-user': self.username_text,
-        'channel': self.channel_text,
+        config['twitch']['username']: self.username_text,
+        config['twitch']['oauth']: self.oauth_text,
+        config['twitch']['username']: self.username_text, # TODO: Support list of admins
+        config['twitch']['channel']: self.channel_text,
         #'hue-bridge-group': self.hue_group_combo,
-        'hue-bridge-ip': self.hue_ip_text,
-        'hue-flash-count': self.hue_flash_count_spin_box,
-        'hue-transition-time': self.flash_speed_slider
+        config['hue']['bridge_ip']: self.hue_ip_text,
+        config['hue']['color_start']: self.flash_color_1,
+        config['hue']['color_end']: self.flash_color_2,
+        config['hue']['flash_count']: self.hue_flash_count_spin_box,
+        config['hue']['transition_time']: self.flash_speed_slider
       }
 
     return field_map
@@ -130,36 +133,38 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     Tries to load the config.yml and returns a dictionary.
     :return: dict
     """
-
     try:
-      if os.path.isfile("config.yml"):
-        with open("config.yml", 'r') as config_file:
-          return yaml.load(config_file) or {}
-      else:
-        raise exceptions.ConfigLoadFailed("No config file found.")
-    except IOError:
-      raise exceptions.ConfigLoadFailed("Failed to load yaml config file.")
+      with open("config.yml", 'r') as config_file:
+        raw_config = yaml.load(config_file)
+    except IOError as e:
+      raw_config = {}
+
+    config = AppConfig.to_python(raw_config)
+
+    return AppConfig.from_python(config)
 
   def load(self):
     try:
+      logger.info("Config Loaded")
       config = self.load_config()
-    except Exception as e:
-      #TODO: Error dialog
-      return
 
-    for field, field_gui in self.field_map().iteritems():
+    except exceptions.ConfigLoadFailed:
+      config = {}
+
+    for value, field_gui in self.field_map(config=config).iteritems():
       if isinstance(field_gui, QtGui.QLineEdit):
-        field_gui.setText(str(config[field]))
+        field_gui.setText(str(value))
       elif isinstance(field_gui, (QtGui.QSlider, QtGui.QSpinBox)):
-        field_gui.setValue(int(config[field]))
+        field_gui.setValue(int(value))
       else:
         raise Exception("WTF")
 
-    self.paint_box(self.flash_1_web, util.hue_to_hex(float(config['hue-color-start']) / float(65535)))
-    self.paint_box(self.flash_2_web, util.hue_to_hex(float(config['hue-color-end']) / float(65535)))
+    self.paint_box(self.flash_1_web, util.hue_to_hex(float(config['hue']['color_start']) / float(65535)))
+    self.paint_box(self.flash_2_web, util.hue_to_hex(float(config['hue']['color_end']) / float(65535)))
 
   @staticmethod
   def paint_box(box, hex):
+    box.setToolTip(QtCore.QString(hex))
     box.setHtml('<html><body style="background-color:{};"/></html>'.format(hex))
     box.show()
 

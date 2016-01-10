@@ -11,6 +11,12 @@ def hue_65535_to_365(val_65535):
 
   return val_359
 
+def hue_359_to_65535(val_359):
+  ratio = float(val_359) / float(359)
+  val_65535 = int(65535 * ratio)
+
+  return val_65535
+
 
 def hue_qcolor(hue_color):
   hue = hue_65535_to_365(hue_color)
@@ -26,7 +32,14 @@ def hue_to_rgb(hue):
 def hue_to_hex(hue):
   return rgb_to_hex(hue_to_rgb(hue))
 
+def hex_to_65535_hue(hex):
+  qcolor = hex_to_qcolor(hex)
+  hue_359 = qcolor.hue()
+  hue_65535 = hue_359_to_65535(hue_359)
+  sat = qcolor.saturation()
+  val = qcolor.value()
 
+  return (hue_65535, sat, val)
 def rgb_to_hex(rgb):
   converted = map(lambda x: str(hex(x))[2:].zfill(2), rgb)
 
@@ -42,15 +55,18 @@ def hex_to_rgb(hex):
   return tuple(int('0x{}'.format(x), 16) for x in split)
 
 
-def rgb_to_hsv(rgb):
+def rgb_to_255_hsv(rgb):
   ratio_rgb = (float(x) / 255.0 for x in rgb)
 
   return rgb_to_hsv(*ratio_rgb)
 
 
-def hex_to_hsv(hex):
+def hex_to_qcolor(hex):
   rgb = hex_to_rgb(hex)
+  hsv = rgb_to_255_hsv(rgb)
+  qcolor = QtGui.QColor.fromHsv(hsv[0], hsv[1], hsv[2])
 
+  return qcolor
 
 def run_async(func):
   """
