@@ -5,8 +5,11 @@ from time import sleep
 
 from log import get_logger
 
-class TwitchHueBot:
+TWITCH_IRC_HOST = "irc.twitch.tv"
+TWITCH_IRC_PORT = 6667
 
+
+class TwitchHueBot:
   def __init__(self, config):
     self.config = config
     self.logger = get_logger(self.__class__.__name__)
@@ -52,7 +55,7 @@ class TwitchHueBot:
 
   def trigger_hue(self):
     self.logger.info("Triggering Hue Flash")
-    hue_bridge_ip = self.config['hue_bridge_ip']
+    hue_bridge_ip = self.config['hue']['bridge_ip']
     self.logger.debug("Connecting to Hue Bridge")
     b = self.connect_hue_bridge(hue_bridge_ip)
     api_result = b.get_api()
@@ -83,13 +86,13 @@ class TwitchHueBot:
     self.logger.debug("Saving current light state.")
     prev_state = self.light_state(group.lights)
 
-    color_start = self.config['hue_color_start']
-    color_end = self.config['hue_color_end']
-    transition_time = self.config['hue_transition_time']
+    color_start = self.config['hue']['color_start']
+    color_end = self.config['hue']['color_end']
+    transition_time = self.config['hue']['transition_time']
 
     self.logger.debug("Beginning flashes.")
     b.set_group(group_id, {'hue': color_start})
-    for x in range(self.config['hue_flash_count']):
+    for x in range(self.config['hue']['flash_count']):
       b.set_group(group_id, {'hue': color_end}, transitiontime=transition_time)
       sleep(transition_time / 10)
       b.set_group(group_id, {'hue': color_start}, transitiontime=transition_time)
@@ -150,29 +153,20 @@ class TwitchHueBot:
     result = result.lstrip(':')
     return result
 
-  #@classmethod
-  #def parse_message(cls, msg):
-  #    if len(msg) >= 1:
-  #        msg = msg.split(' ')
-  #        options = {'!test': command_test,
-  #                   '!asdf': command_asdf}
-  #        if msg[0] in options:
-  #            options[msg[0]]()
-
 # --------------------------------------------- End Command Functions ----------------------------------------------
 
   def run(self):
 
-    b = self.connect_hue_bridge(self.config['hue_bridge_ip'])
+    b = self.connect_hue_bridge(self.config['hue']['bridge_ip'])
     b.connect()
     b.get_api()
 
     con = socket.socket()
-    con.connect((self.config['twitch_host'], self.config['twitch_port']))
+    con.connect((TWITCH_IRC_HOST, TWITCH_IRC_PORT))
 
-    self.send_pass(con, self.config['twitch_oauth'])
-    self.send_nick(con, self.config['twitch_username'])
-    self.join_channel(con, self.config['twitch_channel'])
+    self.send_pass(con, self.config['twitch']['oauth'])
+    self.send_nick(con, self.config['twitch']['username'])
+    self.join_channel(con, self.config['twitch']['channel'])
 
     self.logger.info("Connected to chat.")
 
@@ -201,7 +195,7 @@ class TwitchHueBot:
                 if 'subscribed' in message.strip().lower():
                   self.trigger_hue()
 
-              if sender.strip().lower() == self.config['twitch_username'].lower():
+              if sender.strip().lower() in self.config['twitch']['admins'].lower():
                 if message.strip().lower() == "hue":
                   self.logger.info("Admin user triggered an event.")
                   self.trigger_hue()
