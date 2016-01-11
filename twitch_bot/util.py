@@ -19,8 +19,8 @@ def hue_359_to_65535(val_359):
 
 
 def hue_qcolor(hue_color):
-  hue = hue_65535_to_365(hue_color)
-  return QtGui.QColor.fromHsv(hue, 255, 128)
+  hue = float(hue_color['hue']) / float(65535)
+  return QtGui.QColor.fromHsv(hue, hue_color['saturation'], hue_color['value'])
 
 
 def hue_to_rgb(hue):
@@ -41,13 +41,17 @@ def hue_to_hex(hue):
   return rgb_to_hex(hue_to_rgb(hue))
 
 def hex_to_65535_hue(hex):
+  assert isinstance(hex, str)
+  assert "#" in hex
+  assert len(hex) == 7
+
   qcolor = hex_to_qcolor(hex)
   hue_359 = qcolor.hue()
   hue_65535 = hue_359_to_65535(hue_359)
   sat = qcolor.saturation()
   val = qcolor.value()
 
-  return (hue_65535, sat, val)
+  return {'hue': hue_65535, 'saturation': sat, 'value': val}
 
 def rgb_to_hex(rgb):
   converted = map(lambda x: str(hex(x))[2:].zfill(2), rgb)
@@ -73,8 +77,7 @@ def rgb_to_255_hsv(rgb):
 def hex_to_qcolor(hex_str):
   rgb = hex_to_rgb(hex_str)
 
-  hsv = rgb_to_255_hsv(rgb)
-  qcolor = QtGui.QColor.fromHsv(hsv[0], hsv[1], hsv[2])
+  qcolor = QtGui.QColor.fromRgb(*rgb)
 
   return qcolor
 
@@ -180,3 +183,10 @@ def run_sync(func):
     return func_hl
 
   return sync_func
+
+
+
+if __name__ == "__main__":
+
+  test = hex_to_65535_hue("#FF00FF")
+  print test

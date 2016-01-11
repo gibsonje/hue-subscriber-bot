@@ -19,7 +19,7 @@ class TwitchHueBot:
     state = {}
 
     for light in lights:
-      state[light.light_id] = light.hue
+      state[light.light_id] = (light.hue, light.saturation, light.brightness)
 
     return state
 
@@ -35,7 +35,6 @@ class TwitchHueBot:
     colorable_lights = []
     for light in bridge.lights:
       try:
-        hue = light.hue
         colorable_lights.append(light)
       except KeyError as error:
         # Lux light, doesn't support color.
@@ -51,7 +50,9 @@ class TwitchHueBot:
   @classmethod
   def set_state(cls, bridge, state):
     for light, hue in state.iteritems():
-      bridge.set_light(light, 'hue', hue)
+      bridge.set_light(light, {'hue': hue[0],
+                               'sat': hue[1],
+                                'bri': hue[2]})
 
   def trigger_hue(self):
     self.logger.info("Triggering Hue Flash")
@@ -90,13 +91,21 @@ class TwitchHueBot:
     color_end = self.config['hue']['color_end']
     transition_time = self.config['hue']['transition_time']
 
+    def build_config(hue_dict):
+      return {'hue': hue_dict['hue'],
+              'sat': hue_dict['saturation'],
+              'bri': hue_dict['value']}
+
+    c1 = build_config(color_start)
+    c2 = build_config(color_end)
+
     self.logger.debug("Beginning flashes.")
-    b.set_group(group_id, {'hue': color_start})
+    b.set_group(group_id, c1)
     for x in range(self.config['hue']['flash_count']):
-      b.set_group(group_id, {'hue': color_end}, transitiontime=transition_time)
-      sleep(transition_time / 10)
-      b.set_group(group_id, {'hue': color_start}, transitiontime=transition_time)
-      sleep(transition_time / 10)
+      b.set_group(group_id, c2, transitiontime=transition_time*10)
+      sleep(transition_time)
+      b.set_group(group_id, c1, transitiontime=transition_time*10)
+      sleep(transition_time)
 
     self.logger.debug("Resetting lights to previous state.")
     self.set_state(b, prev_state)

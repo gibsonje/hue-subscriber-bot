@@ -89,7 +89,7 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     except Exception as e:
       self.test_flash_button.setEnabled(False)
       logger.info(e.message)
-      QtGui.QMessageBox.critical(self, "Failed to Connect", "Failed to connect to Hue Bridge {}".format(config['hue_bridge_ip']))
+      QtGui.QMessageBox.critical(self, "Failed to Connect", "Failed to connect to Hue Bridge {}".format(config['hue']['bridge_ip']))
     else:
       self.test_flash_button.setEnabled(True)
       QtGui.QMessageBox.information(self, "Success", "Successfully connected!")
@@ -98,6 +98,7 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     try:
       @util.run_async
       def run():
+        print "DEBUG: Config: %s" %self.get_current_config()
         self.test_flash_button.setEnabled(False)
         bot = twitch_irc.TwitchHueBot(self.get_current_config())
         bot.trigger_hue()
@@ -108,12 +109,9 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
 
   def color_window(self, config_field, color_box):
     cfg = self.get_current_config()
-    if str(color_picker.text()).strip():
-      start_hue = cfg['hue'][config_field]['hue']
-      start_color = util.hue_qcolor(start_hue)
-    else:
-      start_color = QtGui.QColor()
-      start_color.setGreen(255)
+
+    start_color = QtGui.QColor()
+    start_color.setGreen(255)
 
     color_window = QtGui.QColorDialog(start_color)
 
@@ -141,7 +139,6 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     config = self.load_config()
     logger.info("Config Loaded")
 
-
     self.schema_mapper.set_bound(config)
 
 
@@ -159,14 +156,14 @@ class ConfigWindow(QtGui.QDialog, Ui_Dialog):
     config = self.get_current_config()
 
 
-   #with open('config.yml', 'w+') as config_file:
-   #  noalias_dumper = yaml.dumper.SafeDumper
-   #  noalias_dumper.ignore_aliases = lambda self, data: True
+    with open('config.yml', 'w+') as config_file:
+      noalias_dumper = yaml.dumper.SafeDumper
+      noalias_dumper.ignore_aliases = lambda self, data: True
 
-   #  file_contents = yaml.dump(config,
-   #                            default_flow_style=False,
-   #                            Dumper=noalias_dumper)
-   #  config_file.write(file_contents)
+      file_contents = yaml.dump(config,
+                                default_flow_style=False,
+                                Dumper=noalias_dumper)
+      config_file.write(file_contents)
 
   def close(self):
     self.hide()
